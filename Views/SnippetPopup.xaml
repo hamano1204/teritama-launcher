@@ -1,0 +1,57 @@
+<Window x:Class="SuikaTextExpander.Views.SnippetPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:SuikaTextExpander.Models"
+        xmlns:local="clr-namespace:SuikaTextExpander.Views"
+        Title="SnippetPopup" 
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" SizeToContent="WidthAndHeight"
+        Deactivated="Window_Deactivated">
+    <Window.Resources>
+        <local:FolderIconConverter x:Key="FolderIconConverter"/>
+        
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Border" Padding="12,8" Background="Transparent" CornerRadius="4">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#0078D4"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E5E5E5"/>
+                                <Trigger.EnterActions>
+                                    <!-- Mouse hover should update selection but not take focus -->
+                                </Trigger.EnterActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Border Background="White" BorderBrush="#CCC" BorderThickness="1" CornerRadius="8" Padding="2">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+        </Border.Effect>
+        <ListBox x:Name="SnippetList" BorderThickness="0" Background="Transparent"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ItemsSource="{Binding Nodes}"
+                 MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" 
+                                   Margin="0,0,10,0" Opacity="0.7" FontSize="14"/>
+                        <TextBlock Text="{Binding Title}" FontSize="14"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Border>
+</Window>
