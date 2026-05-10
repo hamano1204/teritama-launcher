@@ -276,5 +276,16 @@ namespace SuikaTextExpander.Views
         {
             this.Close();
         }
+
+        private void InsertTagButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string tag)
+            {
+                int caretIndex = ContentBox.CaretIndex;
+                ContentBox.Text = ContentBox.Text.Insert(caretIndex, tag);
+                ContentBox.CaretIndex = caretIndex + tag.Length;
+                ContentBox.Focus();
+            }
+        }
     }
 }

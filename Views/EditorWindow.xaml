@@ -105,11 +105,18 @@
                             <TextBox x:Name="TitleBox" Grid.Row="1" Margin="0,0,0,15" Padding="5"
                                      TextChanged="TitleBox_TextChanged"/>
 
-                            <TextBlock Text="内容" FontWeight="Bold" Grid.Row="2" Margin="0,0,0,5"/>
-                            <TextBox x:Name="ContentBox" Grid.Row="2" Margin="0,25,0,0" 
-                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="5"
-                                     TextChanged="ContentBox_TextChanged"
-                                     AcceptsTab="True"/>
+                            <Border Grid.Row="2" Margin="0,5,0,0">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,5">
+                                        <TextBlock Text="タグ挿入: " VerticalAlignment="Center" Foreground="#666" FontSize="11" Margin="0,0,5,0"/>
+                                        <Button Content="日付 (2026/01/01)" Click="InsertTagButton_Click" Tag="{}{{now:yyyy/MM/dd}}" FontSize="11" Padding="5,2" Margin="0,0,5,0" Background="#F0F0F0" BorderThickness="1"/>
+                                        <Button Content="時刻 (12:34)" Click="InsertTagButton_Click" Tag="{}{{now:HH:mm}}" FontSize="11" Padding="5,2" Margin="0,0,5,0" Background="#F0F0F0" BorderThickness="1"/>
+                                        <Button Content="日時 (2026/01/01 12:34)" Click="InsertTagButton_Click" Tag="{}{{now:yyyy/MM/dd HH:mm}}" FontSize="11" Padding="5,2" Margin="0,0,5,0" Background="#F0F0F0" BorderThickness="1"/>
+                                    </StackPanel>
+                                    <TextBox x:Name="ContentBox" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="5"
+                                             TextChanged="ContentBox_TextChanged" AcceptsTab="True"/>
+                                </DockPanel>
+                            </Border>
                         </Grid>
                     </Border>
                 </Grid>

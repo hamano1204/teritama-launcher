@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using System.Text.RegularExpressions;
 
 namespace SuikaTextExpander.Services
 {
@@ -18,13 +19,16 @@ namespace SuikaTextExpander.Services
         {
             if (string.IsNullOrEmpty(text)) return;
 
+            // プレースホルダーを置換
+            string processedText = ProcessPlaceholders(text);
+
             // クリップボードのバックアップ
             IDataObject backup = Clipboard.GetDataObject();
 
             try
             {
                 // 定型文をセット
-                Clipboard.SetText(text);
+                Clipboard.SetText(processedText);
 
                 // 少し待機（アプリケーションのフォーカス切り替えなどを考慮）
                 Thread.Sleep(50);
@@ -45,6 +49,35 @@ namespace SuikaTextExpander.Services
                 // 今回は単純なテキストの復元を試みるか、そのままにします。
                 // ユーザーの利便性を考え、ここでは何もしないか、テキストのみ復元するのが安全です。
             }
+        }
+
+        private string ProcessPlaceholders(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            // 1. エスケープされたタグ \{{ を一時的なマーカーに置き換え
+            string escapedMarker = "___ESCAPED_BRACE___";
+            string result = text.Replace(@"\{{", escapedMarker);
+
+            // 2. {{now:format}} を置換
+            result = Regex.Replace(result, @"{{now:(.*?)}}", m =>
+            {
+                string format = m.Groups[1].Value;
+                try
+                {
+                    return DateTime.Now.ToString(format);
+                }
+                catch
+                {
+                    // 無効な書式の場合はタグをそのまま残す
+                    return m.Value;
+                }
+            });
+
+            // 3. マーカーを {{ に戻す
+            result = result.Replace(escapedMarker, "{{");
+
+            return result;
         }
     }
 }
