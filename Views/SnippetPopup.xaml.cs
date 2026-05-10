@@ -102,6 +102,7 @@ namespace SuikaTextExpander.Views
             _currentNodes = node.Children.ToList();
             SnippetList.ItemsSource = _currentNodes;
             SnippetList.SelectedIndex = 0;
+            UpdateHeader(node.Title);
         }
 
         private bool NavigateBack()
@@ -111,6 +112,7 @@ namespace SuikaTextExpander.Views
                 _currentNodes = _history.Pop();
                 SnippetList.ItemsSource = _currentNodes;
                 SnippetList.SelectedIndex = 0;
+                UpdateHeader(_history.Count == 0 ? "定型文一覧" : "...");
                 return true;
             }
             return false;
@@ -148,6 +150,12 @@ namespace SuikaTextExpander.Views
             _hook.Stop();
             _hook.Dispose();
             base.OnClosed(e);
+        }
+
+        private void UpdateHeader(string title)
+        {
+            HeaderTitle.Text = title;
+            BackIcon.Visibility = _history.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         #region Native Methods

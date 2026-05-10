@@ -43,28 +43,44 @@
         <Border.Effect>
             <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
         </Border.Effect>
-        <ListBox x:Name="SnippetList" BorderThickness="0" Background="Transparent"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 ItemsSource="{Binding Nodes}"
-                 MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Rectangle x:Name="SeparatorControl" Height="1" Fill="#BBB" Margin="0,6" Visibility="Collapsed"/>
-                        <StackPanel x:Name="ItemContent" Orientation="Horizontal">
-                            <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" 
-                                       Margin="0,0,10,0" Opacity="0.7" FontSize="14"/>
-                            <TextBlock Text="{Binding Title}" FontSize="14"/>
-                        </StackPanel>
-                    </Grid>
-                    <DataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding IsSeparator}" Value="True">
-                            <Setter TargetName="SeparatorControl" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="ItemContent" Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                    </DataTemplate.Triggers>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <DockPanel>
+            <!-- ヘッダー (現在地表示) -->
+            <Border DockPanel.Dock="Top" Background="#F8F8F8" BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="10,6" Margin="-2,-2,-2,0" CornerRadius="6,6,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="BackIcon" Text="← " Foreground="#0078D4" Visibility="Collapsed" FontWeight="Bold"/>
+                    <TextBlock x:Name="HeaderTitle" Text="定型文一覧" FontWeight="Bold" Foreground="#666" FontSize="11"/>
+                </StackPanel>
+            </Border>
+
+            <ListBox x:Name="SnippetList" BorderThickness="0" Background="Transparent"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ItemsSource="{Binding Nodes}"
+                     MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Rectangle x:Name="SeparatorControl" Height="1" Fill="#BBB" Margin="0,6" Visibility="Collapsed"/>
+                            <DockPanel x:Name="ItemContent">
+                                <TextBlock x:Name="Arrow" DockPanel.Dock="Right" Text="▶" FontSize="10" VerticalAlignment="Center" Opacity="0.5" Visibility="Collapsed" Margin="10,0,0,0"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" 
+                                               Margin="0,0,10,0" Opacity="0.7" FontSize="14"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="14"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsSeparator}" Value="True">
+                                <Setter TargetName="SeparatorControl" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="ItemContent" Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsFolder}" Value="True">
+                                <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
     </Border>
 </Window>
