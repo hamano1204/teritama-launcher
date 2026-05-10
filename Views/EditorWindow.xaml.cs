@@ -21,6 +21,7 @@ namespace SuikaTextExpander.Views
             _manager = manager;
             SnippetTree.ItemsSource = _manager.RootNodes;
             HotkeyCharBox.Text = ((char)_manager.Config.HotkeyKey).ToString();
+            AutoStartCheckBox.IsChecked = StartupService.IsStartupEnabled();
         }
 
         private void SnippetTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -118,6 +119,13 @@ namespace SuikaTextExpander.Views
                 char c = char.ToUpper(HotkeyCharBox.Text[0]);
                 _manager.Config.HotkeyKey = (uint)c;
             }
+        }
+
+        private void AutoStartCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            bool isChecked = AutoStartCheckBox.IsChecked ?? false;
+            _manager.Config.AutoStart = isChecked;
+            StartupService.SetStartup(isChecked);
         }
 
         // Drag and Drop Logic

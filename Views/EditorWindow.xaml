@@ -75,12 +75,18 @@
                         Padding="20,8" Margin="0,15,0,0" Click="SaveButton_Click"/>
 
                 <Border Grid.Row="3" BorderBrush="#DDD" BorderThickness="0,1,0,0" Margin="0,15,0,0" Padding="0,10,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="ホットキー設定: Win + Alt + " VerticalAlignment="Center"/>
-                        <TextBox x:Name="HotkeyCharBox" Width="40" Margin="5,0" Padding="3" MaxLength="1"
-                                 HorizontalContentAlignment="Center" VerticalAlignment="Center"
-                                 TextChanged="HotkeyCharBox_TextChanged"/>
-                        <TextBlock Text="(英数字1文字)" VerticalAlignment="Center" Foreground="#888" FontSize="11"/>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <CheckBox x:Name="AutoStartCheckBox" Content="Windows起動時に実行する" 
+                                      VerticalAlignment="Center" Click="AutoStartCheckBox_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="ホットキー設定: Win + Alt + " VerticalAlignment="Center"/>
+                            <TextBox x:Name="HotkeyCharBox" Width="40" Margin="5,0" Padding="3" MaxLength="1"
+                                     HorizontalContentAlignment="Center" VerticalAlignment="Center"
+                                     TextChanged="HotkeyCharBox_TextChanged"/>
+                            <TextBlock Text="(英数字1文字)" VerticalAlignment="Center" Foreground="#888" FontSize="11"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </Grid>
