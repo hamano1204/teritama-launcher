@@ -24,14 +24,18 @@
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#E5E5E5"/>
-                                <Trigger.EnterActions>
-                                    <!-- Mouse hover should update selection but not take focus -->
-                                </Trigger.EnterActions>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSeparator}" Value="True">
+                    <Setter Property="IsEnabled" Value="False"/>
+                    <Setter Property="Focusable" Value="False"/>
+                    <Setter Property="Padding" Value="0"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
     
@@ -45,11 +49,20 @@
                  MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" 
-                                   Margin="0,0,10,0" Opacity="0.7" FontSize="14"/>
-                        <TextBlock Text="{Binding Title}" FontSize="14"/>
-                    </StackPanel>
+                    <Grid>
+                        <Rectangle x:Name="SeparatorControl" Height="1" Fill="#BBB" Margin="0,6" Visibility="Collapsed"/>
+                        <StackPanel x:Name="ItemContent" Orientation="Horizontal">
+                            <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" 
+                                       Margin="0,0,10,0" Opacity="0.7" FontSize="14"/>
+                            <TextBlock Text="{Binding Title}" FontSize="14"/>
+                        </StackPanel>
+                    </Grid>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsSeparator}" Value="True">
+                            <Setter TargetName="SeparatorControl" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="ItemContent" Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

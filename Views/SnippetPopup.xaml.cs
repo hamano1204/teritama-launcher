@@ -49,18 +49,26 @@ namespace SuikaTextExpander.Views
                 switch (e.Key)
                 {
                     case Key.Down:
-                        if (SnippetList.SelectedIndex < SnippetList.Items.Count - 1)
-                            SnippetList.SelectedIndex++;
-                        else
-                            SnippetList.SelectedIndex = 0;
-                        e.Handled = true;
+                        {
+                            int nextIndex = SnippetList.SelectedIndex;
+                            do {
+                                nextIndex = (nextIndex + 1) % SnippetList.Items.Count;
+                            } while (_currentNodes[nextIndex].IsSeparator && nextIndex != SnippetList.SelectedIndex);
+                            
+                            SnippetList.SelectedIndex = nextIndex;
+                            e.Handled = true;
+                        }
                         break;
                     case Key.Up:
-                        if (SnippetList.SelectedIndex > 0)
-                            SnippetList.SelectedIndex--;
-                        else
-                            SnippetList.SelectedIndex = SnippetList.Items.Count - 1;
-                        e.Handled = true;
+                        {
+                            int prevIndex = SnippetList.SelectedIndex;
+                            do {
+                                prevIndex = (prevIndex - 1 + SnippetList.Items.Count) % SnippetList.Items.Count;
+                            } while (_currentNodes[prevIndex].IsSeparator && prevIndex != SnippetList.SelectedIndex);
+                            
+                            SnippetList.SelectedIndex = prevIndex;
+                            e.Handled = true;
+                        }
                         break;
                     case Key.Enter:
                         ExecuteSelection();

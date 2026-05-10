@@ -55,24 +55,109 @@ namespace SuikaTextExpander
                 _pasteService.PasteText(content);
             });
 
-            // マウス位置に表示
-            var mousePos = GetMousePosition();
-            popup.Left = mousePos.X;
-            popup.Top = mousePos.Y;
+            // 1. マウス物理位置を取得 (Pixels)
+            GetCursorPos(out POINT mousePt);
             
+            // 2. モニタ情報取得 (Pixels)
+            IntPtr hMonitor = MonitorFromPoint(mousePt, 1); // MONITOR_DEFAULTTONEAREST
+            MONITORINFO mi = new MONITORINFO();
+            mi.cbSize = Marshal.SizeOf(mi);
+            GetMonitorInfo(hMonitor, ref mi);
+
+            // 3. モニタのDPI（拡大率）を取得
+            uint dpiX = 96, dpiY = 96;
+            try {
+                GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY); // MDT_EFFECTIVE_DPI = 0
+            } catch {
+            }
+            double scaleX = dpiX / 96.0;
+            double scaleY = dpiY / 96.0;
+
+            // 4. 初期の論理座標 (DIPs) を計算
+            double initialX = mousePt.X / scaleX;
+            double initialY = mousePt.Y / scaleY;
+
+            // ちらつきを防ぐため透明にしてからShow
+            popup.Opacity = 0;
+            popup.WindowStartupLocation = WindowStartupLocation.Manual;
+            popup.Left = initialX;
+            popup.Top = initialY;
             popup.Show();
             _currentPopup = popup;
+
+            // Show後（レイアウト確定後）に正確なサイズを取得して位置補正
+            popup.Dispatcher.InvokeAsync(() =>
+            {
+                if (popup == null || !popup.IsLoaded) return;
+
+                double width = popup.ActualWidth;
+                double height = popup.ActualHeight;
+
+                double workLeft = mi.rcWork.Left / scaleX;
+                double workTop = mi.rcWork.Top / scaleY;
+                double workRight = mi.rcWork.Right / scaleX;
+                double workBottom = mi.rcWork.Bottom / scaleY;
+
+                double x = initialX;
+                double y = initialY;
+
+                // 右端
+                if (x + width > workRight)
+                {
+                    x = workRight - width - 2;
+                }
+                // 下端
+                if (y + height > workBottom)
+                {
+                    y = workBottom - height - 2;
+                }
+
+                // 左端・上端
+                if (x < workLeft) x = workLeft + 2;
+                if (y < workTop) y = workTop + 2;
+
+                popup.Left = x;
+                popup.Top = y;
+
+                // 位置確定後に表示
+                popup.Opacity = 1;
+
+            }, System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetCursorPos(out POINT lpPoint);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [DllImport("shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
         {
             public int X;
             public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        public struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left, Top, Right, Bottom;
         }
 
         private Point GetMousePosition()

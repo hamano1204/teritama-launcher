@@ -1,8 +1,10 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.Win32;
 using SuikaTextExpander.Models;
 using SuikaTextExpander.Services;
 
@@ -285,6 +287,60 @@ namespace SuikaTextExpander.Views
                 ContentBox.Text = ContentBox.Text.Insert(caretIndex, tag);
                 ContentBox.CaretIndex = caretIndex + tag.Length;
                 ContentBox.Focus();
+            }
+        }
+
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+                FileName = "suika_backup.json",
+                Title = "定型文のエクスポート"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    _manager.Export(dialog.FileName);
+                    MessageBox.Show("エクスポートが完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"エクスポートに失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void ImportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("インポートを行うと現在のすべての定型文が上書きされます。よろしいですか？", 
+                                       "インポートの確認", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            
+            if (result != MessageBoxResult.Yes) return;
+
+            var dialog = new OpenFileDialog
+            {
+                Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+                Title = "定型文のインポート"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    _manager.Import(dialog.FileName);
+                    // TreeViewの再読み込みを促すためにItemsSourceを再セット（あるいはPropertyChangedが必要）
+                    SnippetTree.ItemsSource = null;
+                    SnippetTree.ItemsSource = _manager.RootNodes;
+                    
+                    MessageBox.Show("インポートが完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"インポートに失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

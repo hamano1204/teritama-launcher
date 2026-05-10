@@ -51,12 +51,7 @@ namespace SuikaTextExpander.Services
                     Directory.CreateDirectory(AppDataPath);
                 }
 
-                var data = new StorageData
-                {
-                    Config = this.Config,
-                    Snippets = new List<SnippetNode>(this.RootNodes)
-                };
-
+                var data = CreateStorageData();
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(FilePath, json);
             }
@@ -64,6 +59,34 @@ namespace SuikaTextExpander.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to save data: {ex.Message}");
             }
+        }
+
+        public void Export(string path)
+        {
+            var data = CreateStorageData();
+            var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+            File.WriteAllText(path, json);
+        }
+
+        public void Import(string path)
+        {
+            var json = File.ReadAllText(path);
+            var data = JsonConvert.DeserializeObject<StorageData>(json);
+            if (data != null)
+            {
+                RootNodes = new ObservableCollection<SnippetNode>(data.Snippets ?? new List<SnippetNode>());
+                Config = data.Config ?? new AppConfig();
+                Save();
+            }
+        }
+
+        private StorageData CreateStorageData()
+        {
+            return new StorageData
+            {
+                Config = this.Config,
+                Snippets = new List<SnippetNode>(this.RootNodes)
+            };
         }
 
         private void CreateDefaultData()
