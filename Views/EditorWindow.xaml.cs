@@ -38,6 +38,7 @@ namespace SuikaTextExpander.Views
             if (_selectedNode != null)
             {
                 EditorGrid.Visibility = Visibility.Visible;
+                EmptyState.Visibility = Visibility.Collapsed;
                 TitleBox.Text = _selectedNode.Title;
                 ContentBox.Text = _selectedNode.Content;
                 
@@ -47,6 +48,23 @@ namespace SuikaTextExpander.Views
             else
             {
                 EditorGrid.Visibility = Visibility.Collapsed;
+                EmptyState.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void Nav_Checked(object sender, RoutedEventArgs e)
+        {
+            if (SnippetsSection == null || SettingsSection == null) return;
+
+            if (NavSnippets.IsChecked == true)
+            {
+                SnippetsSection.Visibility = Visibility.Visible;
+                SettingsSection.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SnippetsSection.Visibility = Visibility.Collapsed;
+                SettingsSection.Visibility = Visibility.Visible;
             }
         }
 
