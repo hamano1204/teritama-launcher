@@ -140,8 +140,12 @@
                         <GroupBox Header="ホットキー設定" Padding="10">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="定型文メニューを表示: " VerticalAlignment="Center"/>
-                                    <TextBlock Text="Win + Alt + " FontWeight="Bold" VerticalAlignment="Center" Margin="5,0"/>
+                                    <TextBlock Text="定型文メニューを表示: " VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <CheckBox x:Name="ModifierCtrl" Content="Ctrl" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <CheckBox x:Name="ModifierAlt" Content="Alt" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <CheckBox x:Name="ModifierShift" Content="Shift" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <CheckBox x:Name="ModifierWin" Content="Win" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock Text="+" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                     <TextBox x:Name="HotkeyCharBox" Width="40" Padding="5" MaxLength="1"
                                              HorizontalContentAlignment="Center" VerticalAlignment="Center"
                                              TextChanged="HotkeyCharBox_TextChanged"/>

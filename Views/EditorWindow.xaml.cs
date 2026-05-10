@@ -24,6 +24,12 @@ namespace SuikaTextExpander.Views
             SnippetTree.ItemsSource = _manager.RootNodes;
             HotkeyCharBox.Text = ((char)_manager.Config.HotkeyKey).ToString();
             AutoStartCheckBox.IsChecked = StartupService.IsStartupEnabled();
+
+            // ホットキー装飾キーの初期化
+            ModifierAlt.IsChecked = (_manager.Config.HotkeyModifiers & 0x0001) != 0;
+            ModifierCtrl.IsChecked = (_manager.Config.HotkeyModifiers & 0x0002) != 0;
+            ModifierShift.IsChecked = (_manager.Config.HotkeyModifiers & 0x0004) != 0;
+            ModifierWin.IsChecked = (_manager.Config.HotkeyModifiers & 0x0008) != 0;
         }
 
         private void SnippetTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -269,6 +275,15 @@ namespace SuikaTextExpander.Views
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            // ホットキー装飾キーの取得
+            uint modifiers = 0;
+            if (ModifierAlt.IsChecked == true) modifiers |= 0x0001;
+            if (ModifierCtrl.IsChecked == true) modifiers |= 0x0002;
+            if (ModifierShift.IsChecked == true) modifiers |= 0x0004;
+            if (ModifierWin.IsChecked == true) modifiers |= 0x0008;
+
+            _manager.Config.HotkeyModifiers = modifiers;
+
             _manager.Save();
             ((App)Application.Current).UpdateHotkey();
             this.Close();
