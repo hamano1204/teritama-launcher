@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Runtime.InteropServices;
+using System.Threading;
 using SuikaTextExpander.Services;
 using SuikaTextExpander.Views;
 
@@ -13,9 +14,22 @@ namespace SuikaTextExpander
         private PasteService _pasteService = null!;
         private MainWindow _hiddenWindow = null!;
         private SnippetPopup? _currentPopup;
+        private static Mutex? _mutex;
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // 二重起動防止のチェック
+            bool createdNew;
+            _mutex = new Mutex(true, "SuikaTextExpander-UniqueMutexName-1204", out createdNew);
+            if (!createdNew)
+            {
+                _mutex.Dispose();
+                _mutex = null;
+                MessageBox.Show("Suika Text Expander はすでに起動しています。", "二重起動検知", MessageBoxButton.OK, MessageBoxImage.Information);
+                Shutdown();
+                return;
+            }
+
             AppDomain.CurrentDomain.UnhandledException += (s, ev) => LogException(ev.ExceptionObject as Exception);
             DispatcherUnhandledException += (s, ev) => { LogException(ev.Exception); ev.Handled = false; };
 
@@ -192,6 +206,16 @@ namespace SuikaTextExpander
             {
                 _hotkeyService.HotkeyPressed -= OnHotkeyPressed;
                 _hotkeyService.Dispose();
+            }
+            if (_mutex != null)
+            {
+                try
+                {
+                    _mutex.ReleaseMutex();
+                }
+                catch {}
+                _mutex.Dispose();
+                _mutex = null;
             }
             base.OnExit(e);
         }
