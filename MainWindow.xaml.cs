@@ -15,15 +15,31 @@ namespace SuikaTextExpander
         {
             try
             {
-                var icon = System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                if (icon != null)
+                string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                if (exePath.EndsWith(".dll"))
                 {
-                    MyNotifyIcon.Icon = icon;
+                    exePath = exePath.Substring(0, exePath.Length - 4) + ".exe";
                 }
-                else
+
+                if (System.IO.File.Exists(exePath))
                 {
-                    MyNotifyIcon.Icon = System.Drawing.SystemIcons.Application;
+                    var icon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
+                    if (icon != null)
+                    {
+                        MyNotifyIcon.Icon = icon;
+                        return;
+                    }
                 }
+
+                // Fallback to app.ico in base directory
+                string baseIcoPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "app.ico");
+                if (System.IO.File.Exists(baseIcoPath))
+                {
+                    MyNotifyIcon.Icon = new System.Drawing.Icon(baseIcoPath);
+                    return;
+                }
+
+                MyNotifyIcon.Icon = System.Drawing.SystemIcons.Application;
             }
             catch
             {

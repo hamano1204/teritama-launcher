@@ -16,6 +16,9 @@ namespace SuikaTextExpander
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            AppDomain.CurrentDomain.UnhandledException += (s, ev) => LogException(ev.ExceptionObject as Exception);
+            DispatcherUnhandledException += (s, ev) => { LogException(ev.Exception); ev.Handled = false; };
+
             base.OnStartup(e);
 
             _snippetManager = new SnippetManager();
@@ -32,6 +35,18 @@ namespace SuikaTextExpander
                 MessageBox.Show($"ホットキー({_snippetManager.Config.HotkeyText})の登録に失敗しました。", "ホットキーエラー");
             }
             _hotkeyService.HotkeyPressed += OnHotkeyPressed;
+        }
+
+        private void LogException(Exception? ex)
+        {
+            if (ex == null) return;
+            try
+            {
+                string logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                string logText = $"[{DateTime.Now}] Unhandled Exception:\n{ex.ToString()}\n\n";
+                System.IO.File.AppendAllText(logPath, logText);
+            }
+            catch {}
         }
 
         private void OnHotkeyPressed(object? sender, EventArgs e)

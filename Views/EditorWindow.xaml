@@ -310,7 +310,7 @@
                                     <TextBlock Text="自動起動" FontWeight="Normal" Foreground="{StaticResource Win11TextPrimary}"/>
                                     <TextBlock Text="Windowsログイン時に自動的に起動します" FontSize="11" Foreground="{StaticResource Win11TextSecondary}"/>
                                 </StackPanel>
-                                <CheckBox x:Name="AutoStartCheckBox" HorizontalAlignment="Right" VerticalAlignment="Center" Click="AutoStartCheckBox_Click" Style="{StaticResource {x:Type CheckBox}}"/>
+                                <CheckBox x:Name="AutoStartCheckBox" HorizontalAlignment="Right" VerticalAlignment="Center" Click="AutoStartCheckBox_Click"/>
                             </DockPanel>
                         </StackPanel>
                     </Border>
