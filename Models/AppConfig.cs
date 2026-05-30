@@ -2,8 +2,8 @@ namespace SuikaTextExpander.Models
 {
     public class AppConfig
     {
-        public uint HotkeyModifiers { get; set; } = 0x0001 | 0x0008; // Alt (0x01) + Win (0x08)
-        public uint HotkeyKey { get; set; } = 0x53; // 'S' key
+        public uint HotkeyModifiers { get; set; } = 0x0002 | 0x0004 | 0x0008; // Ctrl (0x02) + Shift (0x04) + Win (0x08)
+        public uint HotkeyKey { get; set; } = 0x56; // 'V' key
         public bool AutoStart { get; set; } = false;
 
         // 表示用プロパティ

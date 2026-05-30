@@ -8,13 +8,13 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>SuikaTextExpander</AssemblyName>
     <RootNamespace>SuikaTextExpander</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.7" />
   </ItemGroup>
 
 </Project>

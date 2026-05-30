@@ -23,7 +23,7 @@ namespace SuikaTextExpander.Services
             string processedText = ProcessPlaceholders(text);
 
             // クリップボードのバックアップ
-            IDataObject backup = Clipboard.GetDataObject();
+            IDataObject? backup = Clipboard.GetDataObject();
 
             try
             {

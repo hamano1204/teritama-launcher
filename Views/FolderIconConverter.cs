@@ -10,6 +10,7 @@ namespace SuikaTextExpander.Views
         {
             if (value is SuikaTextExpander.Models.SnippetNode node)
             {
+                if (node.IsDummy) return "";
                 if (node.IsFolder) return "📁";
                 if (node.IsSeparator) return "➖";
                 return "📄";

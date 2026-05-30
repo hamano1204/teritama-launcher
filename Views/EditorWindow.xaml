@@ -6,55 +6,60 @@
         xmlns:models="clr-namespace:SuikaTextExpander.Models"
         xmlns:local="clr-namespace:SuikaTextExpander.Views"
         mc:Ignorable="d"
-        Title="Suika Text Expander" Height="650" Width="900"
+        Title="Suika Text Expander" Height="650" Width="920"
         WindowStartupLocation="CenterScreen"
-        Background="#F9F9F9"
-        FontFamily="Segoe UI, Microsoft YaHei, Meiryo">
+        Background="#F3F3F3"
+        FontFamily="Segoe UI Variable Text, Segoe UI, Meiryo"
+        Icon="/suika_icon.png">
     <Window.Resources>
         <local:FolderIconConverter x:Key="FolderIconConverter"/>
 
-        <!-- Color Palette -->
-        <SolidColorBrush x:Key="PrimaryBlue" Color="#0078D4"/>
-        <SolidColorBrush x:Key="SecondaryText" Color="#666666"/>
-        <SolidColorBrush x:Key="CardBackground" Color="White"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#E5E5E5"/>
+        <!-- Windows 11 Accent & Neutral Colors -->
+        <SolidColorBrush x:Key="Win11Accent" Color="#0067C0"/>
+        <SolidColorBrush x:Key="Win11AccentHover" Color="#005AAB"/>
+        <SolidColorBrush x:Key="Win11TextPrimary" Color="#000000"/>
+        <SolidColorBrush x:Key="Win11TextSecondary" Color="#5F5F5F"/>
+        <SolidColorBrush x:Key="Win11CardBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Win11CardBorder" Color="#E5E5E5"/>
+        <SolidColorBrush x:Key="Win11SidebarBackground" Color="#EEEEEE"/>
+        <SolidColorBrush x:Key="Win11SidebarBorder" Color="#E0E0E0"/>
 
-        <!-- Card Style -->
+        <!-- Windows 11 Card Style (Fluent Card) -->
         <Style x:Key="SettingCard" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource Win11CardBackground}"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Win11CardBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="#D0D0D0"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <!-- Modern Button Style -->
+        <!-- Windows 11 Standard Button Style (Fluent Button) -->
         <Style x:Key="ModernButton" TargetType="Button">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="BorderBrush" Value="#CCCCCC"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FDFFFFFF"/>
+            <Setter Property="Foreground" Value="{StaticResource Win11TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="#C3C3C3"/>
+            <Setter Property="BorderThickness" Value="1,1,1,1.5"/> <!-- Windows 11 3D bottom-border hint -->
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontWeight" Value="Normal"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
+                        <Border x:Name="buttonBorder" Background="{TemplateBinding Background}" 
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="{TemplateBinding BorderThickness}" 
                                 CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F5F5F5"/>
+                                <Setter Property="Background" Value="#F9F9F9"/>
+                                <Setter Property="BorderBrush" Value="#B5B5B5"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#EAEAEA"/>
+                                <Setter Property="Background" Value="#F3F3F3"/>
+                                <Setter Property="BorderBrush" Value="#B5B5B5"/>
+                                <Setter Property="BorderThickness" Value="1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -62,37 +67,95 @@
             </Setter>
         </Style>
 
-        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
-            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
+        <!-- Windows 11 Accent Button Style (Fluent Primary Button) -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Win11Accent}"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="#005AAB"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1.5"/>
+            <Setter Property="Padding" Value="16,8"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#106EBE"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="buttonBorder" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource Win11AccentHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#004D93"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- Navigation RadioButton Style -->
+        <!-- Windows 11 Sidebar Navigation Link Style -->
         <Style x:Key="NavLink" TargetType="RadioButton">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Border" Background="Transparent" CornerRadius="6" Margin="0,2" Padding="12,10">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="Icon" Text="{TemplateBinding Tag}" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                <ContentPresenter VerticalAlignment="Center"/>
-                            </StackPanel>
+                        <Border x:Name="Border" Background="Transparent" CornerRadius="4" Margin="4,2" Padding="12,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Left Indicator Bar for Windows 11 style -->
+                                <Border x:Name="Indicator" Width="3" Height="16" Background="{StaticResource Win11Accent}" CornerRadius="1.5" HorizontalAlignment="Left" Margin="-12,0,8,0" Visibility="Collapsed"/>
+                                
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <TextBlock x:Name="Icon" Text="{TemplateBinding Tag}" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}"/>
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E9F4FF"/>
-                                <Setter Property="Foreground" Value="#0078D4"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FDFFFFFF"/> <!-- Pure White active block -->
+                                <Setter Property="Foreground" Value="{StaticResource Win11TextPrimary}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#F0F0F0"/>
+                                <Setter TargetName="Border" Property="Background" Value="#EAEAEA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Windows 11 Flat Text Field Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#FDFFFFFF"/>
+            <Setter Property="BorderThickness" Value="1,1,1,2"/> <!-- Slightly thicker bottom border -->
+            <Setter Property="BorderBrush" Value="#C3C3C3"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Foreground" Value="{StaticResource Win11TextPrimary}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Win11Accent}"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1,1,1,2"/>
+                                <Setter Property="Background" Value="#FFFFFF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -107,9 +170,9 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Left Navigation Sidebar -->
-        <Border Background="#F3F3F3" BorderBrush="#E5E5E5" BorderThickness="0,0,1,0">
-            <Grid Margin="15,25">
+        <!-- Sidebar Navigation -->
+        <Border Background="{StaticResource Win11SidebarBackground}" BorderBrush="{StaticResource Win11SidebarBorder}" BorderThickness="0,0,1,0">
+            <Grid Margin="10,25,10,25">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -117,15 +180,15 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="Suika" FontSize="24" FontWeight="Bold" Foreground="#0078D4" Margin="10,0,0,5"/>
-                    <TextBlock Text="Text Expander" FontSize="12" Foreground="#888" Margin="10,0,0,30"/>
+                    <TextBlock Text="Suika" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" Margin="15,0,0,2"/>
+                    <TextBlock Text="Text Expander" FontSize="11" Foreground="{StaticResource Win11TextSecondary}" Margin="16,0,0,30"/>
 
-                    <RadioButton Content="定型文の編集" IsChecked="True" Style="{StaticResource NavLink}" Tag="&#xE70F;" x:Name="NavSnippets" Checked="Nav_Checked"/>
-                    <RadioButton Content="全般設定" Style="{StaticResource NavLink}" Tag="&#xE713;" x:Name="NavSettings" Checked="Nav_Checked"/>
+                    <RadioButton Content="定型文の編集" IsChecked="True" Style="{StaticResource NavLink}" Tag="&#xE70F;" x:Name="NavSnippets" Checked="Nav_Checked" Foreground="{StaticResource Win11TextPrimary}"/>
+                    <RadioButton Content="全般設定" Style="{StaticResource NavLink}" Tag="&#xE713;" x:Name="NavSettings" Checked="Nav_Checked" Foreground="{StaticResource Win11TextPrimary}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Row="2" Margin="5">
-                     <TextBlock Text="v1.0.0" Foreground="#AAA" FontSize="10" HorizontalAlignment="Center"/>
+                     <TextBlock Text="v1.0.0" Foreground="{StaticResource Win11TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -140,27 +203,27 @@
             <!-- 1. Snippets Section -->
             <Grid x:Name="SnippetsSection">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="290"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Snippet List Card -->
                 <Border Style="{StaticResource SettingCard}" Grid.Column="0" Margin="0,0,15,0" Padding="0">
                     <DockPanel>
-                        <Border DockPanel.Dock="Top" Padding="15,12" BorderBrush="#F0F0F0" BorderThickness="0,0,0,1">
-                            <TextBlock Text="定型文ツリー" FontWeight="SemiBold" Foreground="#333"/>
+                        <Border DockPanel.Dock="Top" Padding="16,12" BorderBrush="{StaticResource Win11CardBorder}" BorderThickness="0,0,0,1">
+                            <TextBlock Text="定型文ツリー" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Win11TextSecondary}"/>
                         </Border>
                         
-                        <Border DockPanel.Dock="Bottom" Background="#F9F9F9" Padding="5" CornerRadius="0,0,8,8">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="&#xE710;" FontFamily="Segoe MDL2 Assets" ToolTip="追加" Style="{StaticResource ModernButton}" Width="32" Height="32" Margin="2" Click="AddButton_Click"/>
-                                <Button Content="&#xE8B7;" FontFamily="Segoe MDL2 Assets" ToolTip="フォルダ" Style="{StaticResource ModernButton}" Width="32" Height="32" Margin="2" Click="AddFolderButton_Click"/>
-                                <Button Content="&#xE738;" FontFamily="Segoe MDL2 Assets" ToolTip="区切り線" Style="{StaticResource ModernButton}" Width="32" Height="32" Margin="2" Click="AddSeparatorButton_Click"/>
-                                <Button Content="&#xE74D;" FontFamily="Segoe MDL2 Assets" ToolTip="削除" Style="{StaticResource ModernButton}" Width="32" Height="32" Margin="2" Click="DeleteButton_Click"/>
-                            </StackPanel>
+                        <Border DockPanel.Dock="Bottom" Background="#FAFAFA" Padding="8" CornerRadius="0,0,8,8" BorderBrush="{StaticResource Win11CardBorder}" BorderThickness="0,1,0,0">
+                            <UniformGrid Columns="4">
+                                <Button Content="&#xE710;" FontFamily="Segoe MDL2 Assets" ToolTip="追加" Style="{StaticResource ModernButton}" Height="32" Margin="2" Click="AddButton_Click"/>
+                                <Button Content="&#xE8F4;" FontFamily="Segoe MDL2 Assets" ToolTip="フォルダ" Style="{StaticResource ModernButton}" Height="32" Margin="2" Click="AddFolderButton_Click"/>
+                                <Button Content="&#xE738;" FontFamily="Segoe MDL2 Assets" ToolTip="区切り線" Style="{StaticResource ModernButton}" Height="32" Margin="2" Click="AddSeparatorButton_Click"/>
+                                <Button Content="&#xE74D;" FontFamily="Segoe MDL2 Assets" ToolTip="削除" Style="{StaticResource ModernButton}" Height="32" Margin="2" Click="DeleteButton_Click"/>
+                            </UniformGrid>
                         </Border>
 
-                        <TreeView x:Name="SnippetTree" BorderThickness="0" Background="Transparent" Padding="10"
+                        <TreeView x:Name="SnippetTree" BorderThickness="0" Background="Transparent" Padding="8"
                                   SelectedItemChanged="SnippetTree_SelectedItemChanged"
                                   AllowDrop="True"
                                   PreviewMouseLeftButtonDown="SnippetTree_PreviewMouseLeftButtonDown"
@@ -170,14 +233,14 @@
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem">
                                     <Setter Property="IsExpanded" Value="True"/>
-                                    <Setter Property="Padding" Value="5,3"/>
+                                    <Setter Property="Padding" Value="5,4"/>
                                 </Style>
                             </TreeView.ItemContainerStyle>
                             <TreeView.ItemTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type models:SnippetNode}" ItemsSource="{Binding Children}">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" Margin="0,0,8,0" Opacity="0.6"/>
-                                        <TextBlock Text="{Binding Title}"/>
+                                        <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" Margin="0,0,8,0" Opacity="0.8" Foreground="{StaticResource Win11Accent}"/>
+                                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource Win11TextPrimary}"/>
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>
@@ -196,31 +259,39 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Text="定型文の編集" FontSize="16" FontWeight="Bold" Margin="0,0,0,20"/>
+                            <DockPanel Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Text="定型文の編集" FontSize="17" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" VerticalAlignment="Center"/>
+                                <Border Height="1" Background="{StaticResource Win11CardBorder}" VerticalAlignment="Center" Margin="15,0,0,0"/>
+                            </DockPanel>
 
                             <StackPanel Grid.Row="1" Margin="0,0,0,15">
-                                <TextBlock Text="タイトル" Foreground="{StaticResource SecondaryText}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="TitleBox" Padding="8" BorderBrush="#DDD" TextChanged="TitleBox_TextChanged"/>
+                                <TextBlock Text="タイトル" Foreground="{StaticResource Win11TextSecondary}" FontSize="12" Margin="0,0,0,6"/>
+                                <TextBox x:Name="TitleBox" TextChanged="TitleBox_TextChanged"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="2" Margin="0,0,0,15">
+                            <StackPanel Grid.Row="2" Margin="0,0,0,12">
                                 <DockPanel>
-                                    <TextBlock Text="本文" Foreground="{StaticResource SecondaryText}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="本文" Foreground="{StaticResource Win11TextSecondary}" FontSize="12" VerticalAlignment="Center"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <Button Content="日付" Click="InsertTagButton_Click" Tag="{}{{now:yyyy/MM/dd}}" Style="{StaticResource ModernButton}" FontSize="10" Padding="8,2" Margin="0,0,5,0"/>
-                                        <Button Content="時刻" Click="InsertTagButton_Click" Tag="{}{{now:HH:mm}}" Style="{StaticResource ModernButton}" FontSize="10" Padding="8,2" Margin="0,0,5,0"/>
+                                        <Button Content="日付を挿入" Click="InsertTagButton_Click" Tag="{}{{now:yyyy/MM/dd}}" Style="{StaticResource ModernButton}" FontSize="10" Padding="12,4" Margin="0,0,5,0"/>
+                                        <Button Content="時刻を挿入" Click="InsertTagButton_Click" Tag="{}{{now:HH:mm}}" Style="{StaticResource ModernButton}" FontSize="10" Padding="12,4" Margin="0,0,5,0"/>
                                     </StackPanel>
                                 </DockPanel>
                             </StackPanel>
 
                             <TextBox x:Name="ContentBox" Grid.Row="3" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" 
-                                     Padding="10" BorderBrush="#DDD" AcceptsTab="True" TextChanged="ContentBox_TextChanged"/>
+                                     AcceptsTab="True" TextChanged="ContentBox_TextChanged"/>
                         </Grid>
 
-                        <!-- Empty State -->
-                        <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0.5">
-                            <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                            <TextBlock Text="アイテムを選択して編集" FontSize="14" HorizontalAlignment="Center"/>
+                        <!-- Empty State (Windows 11 Style) -->
+                        <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
+                            <Border Width="60" Height="60" CornerRadius="30" Background="#ECECEC" Margin="0,0,0,16" HorizontalAlignment="Center">
+                                <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="{StaticResource Win11TextSecondary}" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="編集するアイテムの選択" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="左の定型文ツリーから項目を選択すると、ここに詳細な編集画面が表示されます。" 
+                                       FontSize="12" Foreground="{StaticResource Win11TextSecondary}" TextAlignment="Center" MaxWidth="300" LineHeight="17"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -229,15 +300,15 @@
             <!-- 2. Settings Section -->
             <ScrollViewer x:Name="SettingsSection" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
                 <StackPanel MaxWidth="600" HorizontalAlignment="Left">
-                    <TextBlock Text="アプリケーション設定" FontSize="20" FontWeight="Bold" Margin="0,0,0,25"/>
+                    <TextBlock Text="環境設定" FontSize="20" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" Margin="0,0,0,25"/>
 
                     <Border Style="{StaticResource SettingCard}">
                         <StackPanel>
-                            <TextBlock Text="起動設定" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                            <TextBlock Text="起動設定" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" Margin="0,0,0,15"/>
                             <DockPanel>
                                 <StackPanel>
-                                    <TextBlock Text="自動起動" FontWeight="Medium"/>
-                                    <TextBlock Text="Windowsログイン時に自動的に起動します" FontSize="12" Foreground="#888"/>
+                                    <TextBlock Text="自動起動" FontWeight="Normal" Foreground="{StaticResource Win11TextPrimary}"/>
+                                    <TextBlock Text="Windowsログイン時に自動的に起動します" FontSize="11" Foreground="{StaticResource Win11TextSecondary}"/>
                                 </StackPanel>
                                 <CheckBox x:Name="AutoStartCheckBox" HorizontalAlignment="Right" VerticalAlignment="Center" Click="AutoStartCheckBox_Click" Style="{StaticResource {x:Type CheckBox}}"/>
                             </DockPanel>
@@ -246,23 +317,28 @@
 
                     <Border Style="{StaticResource SettingCard}">
                         <StackPanel>
-                            <TextBlock Text="ホットキー設定" FontWeight="SemiBold" Margin="0,0,0,15"/>
-                            <TextBlock Text="メニューを呼び出すキーの組み合わせを設定します" FontSize="12" Foreground="#888" Margin="0,0,0,15"/>
+                            <TextBlock Text="キーボードショートカット設定" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" Margin="0,0,0,15"/>
+                            <TextBlock Text="メニューを呼び出すキーの組み合わせを設定します（入力欄をクリックしてキーを押してください）" FontSize="11" Foreground="{StaticResource Win11TextSecondary}" Margin="0,0,0,15"/>
                             <StackPanel Orientation="Horizontal">
                                 <CheckBox x:Name="ModifierCtrl" Content="Ctrl" Margin="0,0,12,0"/>
                                 <CheckBox x:Name="ModifierAlt" Content="Alt" Margin="0,0,12,0"/>
                                 <CheckBox x:Name="ModifierShift" Content="Shift" Margin="0,0,12,0"/>
                                 <CheckBox x:Name="ModifierWin" Content="Win" Margin="0,0,12,0"/>
                                 <TextBlock Text="+" VerticalAlignment="Center" Margin="5,0,12,0" Opacity="0.5"/>
-                                <TextBox x:Name="HotkeyCharBox" Width="45" Padding="8" MaxLength="1" HorizontalContentAlignment="Center" TextChanged="HotkeyCharBox_TextChanged"/>
+                                <TextBox x:Name="HotkeyCharBox" Width="180" 
+                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
+                                         IsReadOnly="True" Focusable="True" Background="White" BorderBrush="{StaticResource Win11SidebarBorder}" 
+                                         FontWeight="Bold" Foreground="{StaticResource Win11Accent}" FontSize="13" Cursor="Hand"
+                                         GotFocus="HotkeyCharBox_GotFocus" LostFocus="HotkeyCharBox_LostFocus" 
+                                         PreviewKeyDown="HotkeyCharBox_PreviewKeyDown"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource SettingCard}">
                         <StackPanel>
-                            <TextBlock Text="データ管理" FontWeight="SemiBold" Margin="0,0,0,15"/>
-                            <TextBlock Text="データのバックアップや移行のためのファイル操作" FontSize="12" Foreground="#888" Margin="0,0,0,15"/>
+                            <TextBlock Text="データ管理" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" Margin="0,0,0,15"/>
+                            <TextBlock Text="データのバックアップや移行のためのファイル操作" FontSize="11" Foreground="{StaticResource Win11TextSecondary}" Margin="0,0,0,15"/>
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="エクスポート" Click="ExportButton_Click" Style="{StaticResource ModernButton}" Margin="0,0,10,0"/>
                                 <Button Content="インポート" Click="ImportButton_Click" Style="{StaticResource ModernButton}"/>
@@ -273,10 +349,10 @@
             </ScrollViewer>
 
             <!-- Bottom Action Bar -->
-            <Border Grid.Row="1" Margin="0,20,0,0" Padding="0,15,0,0" BorderBrush="#EEE" BorderThickness="0,1,0,0">
+            <Border Grid.Row="1" Margin="0,20,0,0" Padding="0,15,0,0" BorderBrush="{StaticResource Win11CardBorder}" BorderThickness="0,1,0,0">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="キャンセル" Width="120" Style="{StaticResource ModernButton}" Margin="0,0,12,0" Click="CancelButton_Click"/>
-                    <Button Content="設定を保存して閉じる" Width="200" Style="{StaticResource PrimaryButton}" Click="SaveButton_Click"/>
+                    <Button Content="保存" Width="120" Style="{StaticResource PrimaryButton}" Click="SaveButton_Click"/>
                 </StackPanel>
             </Border>
         </Grid>

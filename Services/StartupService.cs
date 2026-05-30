@@ -13,7 +13,7 @@ namespace SuikaTextExpander.Services
         {
             try
             {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKeyPath, true))
+                using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(RunKeyPath, true))
                 {
                     if (key == null) return;
 
@@ -44,7 +44,7 @@ namespace SuikaTextExpander.Services
         {
             try
             {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKeyPath, false))
+                using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(RunKeyPath, false))
                 {
                     if (key == null) return false;
                     return key.GetValue(AppName) != null;

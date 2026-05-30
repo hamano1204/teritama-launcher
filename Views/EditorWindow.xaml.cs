@@ -13,16 +13,17 @@ namespace SuikaTextExpander.Views
     public partial class EditorWindow : Window
     {
         private readonly SnippetManager _manager;
-        private SnippetNode _selectedNode;
+        private SnippetNode? _selectedNode;
         private Point _startPoint;
-        private SnippetNode _draggedNode;
+        private SnippetNode? _draggedNode;
 
         public EditorWindow(SnippetManager manager)
         {
             InitializeComponent();
             _manager = manager;
             SnippetTree.ItemsSource = _manager.RootNodes;
-            HotkeyCharBox.Text = ((char)_manager.Config.HotkeyKey).ToString();
+            _recordedKey = _manager.Config.HotkeyKey;
+            HotkeyCharBox.Text = GetKeyDisplayName(_recordedKey);
             AutoStartCheckBox.IsChecked = StartupService.IsStartupEnabled();
 
             // ホットキー装飾キーの初期化
@@ -138,13 +139,61 @@ namespace SuikaTextExpander.Views
             return false;
         }
 
-        private void HotkeyCharBox_TextChanged(object sender, TextChangedEventArgs e)
+        private uint _recordedKey = 0;
+
+        private string GetKeyDisplayName(uint vk)
         {
-            if (HotkeyCharBox.Text.Length > 0)
+            if (vk >= 65 && vk <= 90) return ((char)vk).ToString(); // A-Z
+            if (vk >= 48 && vk <= 57) return ((char)vk).ToString(); // 0-9
+            switch (vk)
             {
-                char c = char.ToUpper(HotkeyCharBox.Text[0]);
-                _manager.Config.HotkeyKey = (uint)c;
+                case 112: return "F1";
+                case 113: return "F2";
+                case 114: return "F3";
+                case 115: return "F4";
+                case 116: return "F5";
+                case 117: return "F6";
+                case 118: return "F7";
+                case 119: return "F8";
+                case 120: return "F9";
+                case 121: return "F10";
+                case 122: return "F11";
+                case 123: return "F12";
+                case 32: return "Space";
+                default: return ((char)vk).ToString();
             }
+        }
+
+        private void HotkeyCharBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            e.Handled = true;
+            System.Windows.Input.Key key = e.Key == System.Windows.Input.Key.System ? e.SystemKey : e.Key;
+            
+            if (key == System.Windows.Input.Key.LeftCtrl || key == System.Windows.Input.Key.RightCtrl ||
+                key == System.Windows.Input.Key.LeftAlt || key == System.Windows.Input.Key.RightAlt ||
+                key == System.Windows.Input.Key.LeftShift || key == System.Windows.Input.Key.RightShift ||
+                key == System.Windows.Input.Key.LWin || key == System.Windows.Input.Key.RWin)
+            {
+                return;
+            }
+
+            int vk = System.Windows.Input.KeyInterop.VirtualKeyFromKey(key);
+            if (vk > 0)
+            {
+                _recordedKey = (uint)vk;
+                HotkeyCharBox.Text = GetKeyDisplayName(_recordedKey);
+                System.Windows.Input.Keyboard.ClearFocus();
+            }
+        }
+
+        private void HotkeyCharBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            HotkeyCharBox.Text = "キーを押してください...";
+        }
+
+        private void HotkeyCharBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            HotkeyCharBox.Text = GetKeyDisplayName(_recordedKey);
         }
 
         private void AutoStartCheckBox_Click(object sender, RoutedEventArgs e)
@@ -171,7 +220,7 @@ namespace SuikaTextExpander.Views
                     Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
                     var treeView = sender as TreeView;
-                    var treeViewItem = FindAnscestor<TreeViewItem>((DependencyObject)e.OriginalSource);
+                    var treeViewItem = FindAncestor<TreeViewItem>((DependencyObject)e.OriginalSource);
 
                     if (treeViewItem != null)
                     {
@@ -195,7 +244,7 @@ namespace SuikaTextExpander.Views
             else
             {
                 var targetNode = GetNodeAt(e.GetPosition(SnippetTree));
-                if (targetNode != null && (_draggedNode == targetNode || IsChildOf(_draggedNode, targetNode)))
+                if (targetNode != null && _draggedNode != null && (_draggedNode == targetNode || IsChildOf(_draggedNode, targetNode)))
                 {
                     e.Effects = DragDropEffects.None;
                 }
@@ -245,12 +294,12 @@ namespace SuikaTextExpander.Views
             }
         }
 
-        private SnippetNode GetNodeAt(Point pos)
+        private SnippetNode? GetNodeAt(Point pos)
         {
             var hitTestResult = VisualTreeHelper.HitTest(SnippetTree, pos);
             if (hitTestResult != null)
             {
-                var treeViewItem = FindAnscestor<TreeViewItem>(hitTestResult.VisualHit);
+                var treeViewItem = FindAncestor<TreeViewItem>(hitTestResult.VisualHit);
                 if (treeViewItem != null)
                 {
                     return treeViewItem.DataContext as SnippetNode;
@@ -259,14 +308,15 @@ namespace SuikaTextExpander.Views
             return null;
         }
 
-        private static T FindAnscestor<T>(DependencyObject current) where T : DependencyObject
+        private static T? FindAncestor<T>(DependencyObject current) where T : DependencyObject
         {
+            DependencyObject? active = current;
             do
             {
-                if (current is T) return (T)current;
-                current = VisualTreeHelper.GetParent(current);
+                if (active is T target) return target;
+                active = VisualTreeHelper.GetParent(active);
             }
-            while (current != null);
+            while (active != null);
             return null;
         }
 
@@ -280,7 +330,7 @@ namespace SuikaTextExpander.Views
             return false;
         }
 
-        private ObservableCollection<SnippetNode> FindParentCollection(ObservableCollection<SnippetNode> nodes, SnippetNode target)
+        private ObservableCollection<SnippetNode>? FindParentCollection(ObservableCollection<SnippetNode> nodes, SnippetNode target)
         {
             if (nodes.Contains(target)) return nodes;
             foreach (var node in nodes)
@@ -301,6 +351,7 @@ namespace SuikaTextExpander.Views
             if (ModifierWin.IsChecked == true) modifiers |= 0x0008;
 
             _manager.Config.HotkeyModifiers = modifiers;
+            _manager.Config.HotkeyKey = _recordedKey;
 
             _manager.Save();
             ((App)Application.Current).UpdateHotkey();

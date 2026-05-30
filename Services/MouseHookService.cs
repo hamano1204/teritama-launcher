@@ -1,22 +1,22 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows.Input;
 
 namespace SuikaTextExpander.Services
 {
-    public class KeyboardHookService : IDisposable
+    public class MouseHookService : IDisposable
     {
-        private const int WH_KEYBOARD_LL = 13;
-        private const int WM_KEYDOWN = 0x0100;
-        private const int WM_SYSKEYDOWN = 0x0104;
+        private const int WH_MOUSE_LL = 14;
+        private const int WM_LBUTTONDOWN = 0x0201;
+        private const int WM_RBUTTONDOWN = 0x0204;
+        private const int WM_MBUTTONDOWN = 0x0207;
 
-        private LowLevelKeyboardProc _proc;
+        private LowLevelMouseProc _proc;
         private IntPtr _hookId = IntPtr.Zero;
 
-        public event EventHandler<KeyEventArgs>? HookKeyDown;
+        public event EventHandler? MouseClicked;
 
-        public KeyboardHookService()
+        public MouseHookService()
         {
             _proc = HookCallback;
         }
@@ -38,36 +38,23 @@ namespace SuikaTextExpander.Services
             }
         }
 
-        private IntPtr SetHook(LowLevelKeyboardProc proc)
+        private IntPtr SetHook(LowLevelMouseProc proc)
         {
             using (Process curProcess = Process.GetCurrentProcess())
             {
                 ProcessModule? curModule = curProcess.MainModule;
                 string? moduleName = curModule?.ModuleName;
-                return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(moduleName ?? ""), 0);
+                return SetWindowsHookEx(WH_MOUSE_LL, proc, GetModuleHandle(moduleName ?? ""), 0);
             }
         }
 
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+        private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN))
+            if (nCode >= 0 && (wParam == (IntPtr)WM_LBUTTONDOWN || wParam == (IntPtr)WM_RBUTTONDOWN || wParam == (IntPtr)WM_MBUTTONDOWN))
             {
-                int vkCode = Marshal.ReadInt32(lParam);
-                Key key = KeyInterop.KeyFromVirtualKey(vkCode);
-                
-                var args = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, key)
-                {
-                    RoutedEvent = Keyboard.KeyDownEvent
-                };
-
-                HookKeyDown?.Invoke(this, args);
-
-                if (args.Handled)
-                {
-                    return (IntPtr)1; // Consume the key
-                }
+                MouseClicked?.Invoke(this, EventArgs.Empty);
             }
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
@@ -75,10 +62,16 @@ namespace SuikaTextExpander.Services
         public void Dispose()
         {
             Stop();
+            GC.SuppressFinalize(this);
+        }
+
+        ~MouseHookService()
+        {
+            Stop();
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

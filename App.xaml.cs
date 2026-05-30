@@ -1,9 +1,6 @@
 using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Runtime.InteropServices;
-using SuikaTextExpander.Models;
 using SuikaTextExpander.Services;
 using SuikaTextExpander.Views;
 
@@ -11,11 +8,11 @@ namespace SuikaTextExpander
 {
     public partial class App : Application
     {
-        private SnippetManager _snippetManager;
-        private HotkeyService _hotkeyService;
-        private PasteService _pasteService;
-        private MainWindow _hiddenWindow;
-        private SnippetPopup _currentPopup;
+        private SnippetManager _snippetManager = null!;
+        private HotkeyService _hotkeyService = null!;
+        private PasteService _pasteService = null!;
+        private MainWindow _hiddenWindow = null!;
+        private SnippetPopup? _currentPopup;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -37,7 +34,7 @@ namespace SuikaTextExpander
             _hotkeyService.HotkeyPressed += OnHotkeyPressed;
         }
 
-        private void OnHotkeyPressed(object sender, EventArgs e)
+        private void OnHotkeyPressed(object? sender, EventArgs e)
         {
             ShowSnippetMenu();
         }
@@ -46,7 +43,7 @@ namespace SuikaTextExpander
         {
             if (_currentPopup != null && _currentPopup.IsVisible)
             {
-                _currentPopup.Close();
+                _currentPopup.CloseAll();
                 return;
             }
 
@@ -160,12 +157,6 @@ namespace SuikaTextExpander
             public int Left, Top, Right, Bottom;
         }
 
-        private Point GetMousePosition()
-        {
-            GetCursorPos(out POINT point);
-            return new Point(point.X, point.Y);
-        }
-
         public void ShowEditor()
         {
             var editor = new EditorWindow(_snippetManager);
@@ -182,7 +173,11 @@ namespace SuikaTextExpander
 
         protected override void OnExit(ExitEventArgs e)
         {
-            _hotkeyService?.Dispose();
+            if (_hotkeyService != null)
+            {
+                _hotkeyService.HotkeyPressed -= OnHotkeyPressed;
+                _hotkeyService.Dispose();
+            }
             base.OnExit(e);
         }
     }

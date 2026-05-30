@@ -35,5 +35,7 @@ namespace SuikaTextExpander.Models
         public bool IsSnippet => Type == NodeType.Snippet;
         [JsonIgnore]
         public bool IsSeparator => Type == NodeType.Separator;
+        [JsonIgnore]
+        public bool IsDummy { get; set; } = false;
     }
 }

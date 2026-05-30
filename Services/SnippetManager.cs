@@ -36,8 +36,9 @@ namespace SuikaTextExpander.Services
                 
                 CreateDefaultData();
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Failed to load data: {ex.Message}");
                 CreateDefaultData();
             }
         }
@@ -63,20 +64,36 @@ namespace SuikaTextExpander.Services
 
         public void Export(string path)
         {
-            var data = CreateStorageData();
-            var json = JsonConvert.SerializeObject(data, Formatting.Indented);
-            File.WriteAllText(path, json);
+            try
+            {
+                var data = CreateStorageData();
+                var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+                File.WriteAllText(path, json);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to export data: {ex.Message}");
+                throw;
+            }
         }
 
         public void Import(string path)
         {
-            var json = File.ReadAllText(path);
-            var data = JsonConvert.DeserializeObject<StorageData>(json);
-            if (data != null)
+            try
             {
-                RootNodes = new ObservableCollection<SnippetNode>(data.Snippets ?? new List<SnippetNode>());
-                Config = data.Config ?? new AppConfig();
-                Save();
+                var json = File.ReadAllText(path);
+                var data = JsonConvert.DeserializeObject<StorageData>(json);
+                if (data != null)
+                {
+                    RootNodes = new ObservableCollection<SnippetNode>(data.Snippets ?? new List<SnippetNode>());
+                    Config = data.Config ?? new AppConfig();
+                    Save();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to import data: {ex.Message}");
+                throw;
             }
         }
 

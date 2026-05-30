@@ -16,9 +16,9 @@ namespace SuikaTextExpander.Services
         private const int HOTKEY_ID = 9000;
 
         private IntPtr _hWnd;
-        private HwndSource _source;
+        private HwndSource? _source;
 
-        public event EventHandler HotkeyPressed;
+        public event EventHandler? HotkeyPressed;
 
         public bool Register(Window window, uint modifiers, uint key)
         {
