@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 
-namespace SuikaTextExpander
+namespace TeritamaLauncher
 {
     public partial class MainWindow : Window
     {

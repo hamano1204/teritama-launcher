@@ -1,18 +1,19 @@
-<Window x:Class="SuikaTextExpander.Views.EditorWindow"
+<Window x:Class="TeritamaLauncher.Views.EditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:models="clr-namespace:SuikaTextExpander.Models"
-        xmlns:local="clr-namespace:SuikaTextExpander.Views"
+        xmlns:models="clr-namespace:TeritamaLauncher.Models"
+        xmlns:local="clr-namespace:TeritamaLauncher.Views"
         mc:Ignorable="d"
-        Title="Suika Text Expander" Height="650" Width="920"
+        Title="Teritama Launcher" Height="650" Width="920"
         WindowStartupLocation="CenterScreen"
         Background="#F3F3F3"
         FontFamily="Segoe UI Variable Text, Segoe UI, Meiryo"
-        Icon="/suika_icon.png">
+        Icon="/teritama_icon.png">
     <Window.Resources>
         <local:FolderIconConverter x:Key="FolderIconConverter"/>
+        <local:NodeIconImageConverter x:Key="NodeIconImageConverter"/>
 
         <!-- Windows 11 Accent & Neutral Colors -->
         <SolidColorBrush x:Key="Win11Accent" Color="#0067C0"/>
@@ -180,10 +181,10 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="Suika" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" Margin="15,0,0,2"/>
-                    <TextBlock Text="Text Expander" FontSize="11" Foreground="{StaticResource Win11TextSecondary}" Margin="16,0,0,30"/>
+                    <TextBlock Text="Teritama" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" Margin="15,0,0,2"/>
+                    <TextBlock Text="Launcher" FontSize="11" Foreground="{StaticResource Win11TextSecondary}" Margin="16,0,0,30"/>
 
-                    <RadioButton Content="定型文の編集" IsChecked="True" Style="{StaticResource NavLink}" Tag="&#xE70F;" x:Name="NavSnippets" Checked="Nav_Checked" Foreground="{StaticResource Win11TextPrimary}"/>
+                    <RadioButton Content="項目の編集" IsChecked="True" Style="{StaticResource NavLink}" Tag="&#xE70F;" x:Name="NavSnippets" Checked="Nav_Checked" Foreground="{StaticResource Win11TextPrimary}"/>
                     <RadioButton Content="全般設定" Style="{StaticResource NavLink}" Tag="&#xE713;" x:Name="NavSettings" Checked="Nav_Checked" Foreground="{StaticResource Win11TextPrimary}"/>
                 </StackPanel>
 
@@ -211,7 +212,7 @@
                 <Border Style="{StaticResource SettingCard}" Grid.Column="0" Margin="0,0,15,0" Padding="0">
                     <DockPanel>
                         <Border DockPanel.Dock="Top" Padding="16,12" BorderBrush="{StaticResource Win11CardBorder}" BorderThickness="0,0,0,1">
-                            <TextBlock Text="定型文ツリー" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Win11TextSecondary}"/>
+                            <TextBlock Text="アイテムツリー" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Win11TextSecondary}"/>
                         </Border>
                         
                         <Border DockPanel.Dock="Bottom" Background="#FAFAFA" Padding="8" CornerRadius="0,0,8,8" BorderBrush="{StaticResource Win11CardBorder}" BorderThickness="0,1,0,0">
@@ -239,8 +240,10 @@
                             <TreeView.ItemTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type models:SnippetNode}" ItemsSource="{Binding Children}">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" Margin="0,0,8,0" Opacity="0.8" Foreground="{StaticResource Win11Accent}"/>
-                                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource Win11TextPrimary}"/>
+                                        <Image Source="{Binding Converter={StaticResource NodeIconImageConverter}}" 
+                                               Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource Win11TextPrimary}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>
@@ -260,7 +263,7 @@
                             </Grid.RowDefinitions>
 
                             <DockPanel Grid.Row="0" Margin="0,0,0,20">
-                                <TextBlock Text="定型文の編集" FontSize="17" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" VerticalAlignment="Center"/>
+                                <TextBlock Text="項目の編集" FontSize="17" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" VerticalAlignment="Center"/>
                                 <Border Height="1" Background="{StaticResource Win11CardBorder}" VerticalAlignment="Center" Margin="15,0,0,0"/>
                             </DockPanel>
 
@@ -271,10 +274,10 @@
 
                             <StackPanel Grid.Row="2" Margin="0,0,0,12">
                                 <DockPanel>
-                                    <TextBlock Text="本文" Foreground="{StaticResource Win11TextSecondary}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="実行パス / URL" Foreground="{StaticResource Win11TextSecondary}" FontSize="12" VerticalAlignment="Center"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <Button Content="日付を挿入" Click="InsertTagButton_Click" Tag="{}{{now:yyyy/MM/dd}}" Style="{StaticResource ModernButton}" FontSize="10" Padding="12,4" Margin="0,0,5,0"/>
-                                        <Button Content="時刻を挿入" Click="InsertTagButton_Click" Tag="{}{{now:HH:mm}}" Style="{StaticResource ModernButton}" FontSize="10" Padding="12,4" Margin="0,0,5,0"/>
+                                        <Button Content="ファイル参照..." Click="BrowseFileButton_Click" Style="{StaticResource ModernButton}" FontSize="10" Padding="12,4" Margin="0,0,5,0"/>
+                                        <Button Content="フォルダ参照..." Click="BrowseFolderButton_Click" Style="{StaticResource ModernButton}" FontSize="10" Padding="12,4" Margin="0,0,5,0"/>
                                     </StackPanel>
                                 </DockPanel>
                             </StackPanel>
@@ -285,17 +288,17 @@
 
                         <!-- Empty State (Windows 11 Style) -->
                         <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
-                            <Border Width="60" Height="60" CornerRadius="30" Background="#ECECEC" Margin="0,0,0,16" HorizontalAlignment="Center">
-                                <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="{StaticResource Win11TextSecondary}" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="編集するアイテムの選択" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                            <TextBlock Text="左の定型文ツリーから項目を選択すると、ここに詳細な編集画面が表示されます。" 
-                                       FontSize="12" Foreground="{StaticResource Win11TextSecondary}" TextAlignment="Center" MaxWidth="300" LineHeight="17"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Grid>
+                             <Border Width="60" Height="60" CornerRadius="30" Background="#ECECEC" Margin="0,0,0,16" HorizontalAlignment="Center">
+                                 <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="{StaticResource Win11TextSecondary}" 
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                             </Border>
+                             <TextBlock Text="編集するアイテムの選択" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Win11TextPrimary}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                             <TextBlock Text="左のアイテムツリーから項目を選択すると、ここに詳細な編集画面が表示されます。" 
+                                        FontSize="12" Foreground="{StaticResource Win11TextSecondary}" TextAlignment="Center" MaxWidth="300" LineHeight="17"/>
+                         </StackPanel>
+                     </Grid>
+                 </Border>
+             </Grid>
 
             <!-- 2. Settings Section -->
             <ScrollViewer x:Name="SettingsSection" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">

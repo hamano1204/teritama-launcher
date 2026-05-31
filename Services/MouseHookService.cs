@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SuikaTextExpander.Services
+namespace TeritamaLauncher.Services
 {
     public class MouseHookService : IDisposable
     {

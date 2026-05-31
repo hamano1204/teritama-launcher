@@ -2,12 +2,12 @@ using System;
 using Microsoft.Win32;
 using System.Reflection;
 
-namespace SuikaTextExpander.Services
+namespace TeritamaLauncher.Services
 {
     public static class StartupService
     {
         private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string AppName = "SuikaTextExpander";
+        private const string AppName = "TeritamaLauncher";
 
         public static void SetStartup(bool enable)
         {

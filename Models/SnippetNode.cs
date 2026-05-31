@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 
-namespace SuikaTextExpander.Models
+namespace TeritamaLauncher.Models
 {
     public enum NodeType
     {

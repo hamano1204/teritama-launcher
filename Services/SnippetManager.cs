@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using Newtonsoft.Json;
-using SuikaTextExpander.Models;
+using TeritamaLauncher.Models;
 
-namespace SuikaTextExpander.Services
+namespace TeritamaLauncher.Services
 {
     public class SnippetManager
     {
         private static readonly string AppDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "SuikaTextExpander");
+            "TeritamaLauncher");
         
         private static readonly string FilePath = Path.Combine(AppDataPath, "data.json");
 
@@ -110,11 +110,11 @@ namespace SuikaTextExpander.Services
         {
             RootNodes = new ObservableCollection<SnippetNode>
             {
-                new SnippetNode { Title = "挨拶", Type = NodeType.Folder },
-                new SnippetNode { Title = "署名", Content = "---\nSuika Text Expander User", Type = NodeType.Snippet }
+                new SnippetNode { Title = "便利ツール", Type = NodeType.Folder },
+                new SnippetNode { Title = "Google (ウェブサイト)", Content = "https://google.com", Type = NodeType.Snippet }
             };
-            RootNodes[0].Children.Add(new SnippetNode { Title = "お疲れ様です", Content = "お疲れ様です。Suikaです。", Type = NodeType.Snippet });
-            RootNodes[0].Children.Add(new SnippetNode { Title = "よろしくお願いします", Content = "よろしくお願いいたします。", Type = NodeType.Snippet });
+            RootNodes[0].Children.Add(new SnippetNode { Title = "メモ帳", Content = "notepad.exe", Type = NodeType.Snippet });
+            RootNodes[0].Children.Add(new SnippetNode { Title = "電卓", Content = "calc.exe", Type = NodeType.Snippet });
 
             Config = new AppConfig();
             Save();

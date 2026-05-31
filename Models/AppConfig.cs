@@ -1,9 +1,9 @@
-namespace SuikaTextExpander.Models
+namespace TeritamaLauncher.Models
 {
     public class AppConfig
     {
         public uint HotkeyModifiers { get; set; } = 0x0002 | 0x0004 | 0x0008; // Ctrl (0x02) + Shift (0x04) + Win (0x08)
-        public uint HotkeyKey { get; set; } = 0x56; // 'V' key
+        public uint HotkeyKey { get; set; } = 0x52; // 'R' key
         public bool AutoStart { get; set; } = false;
 
         // 表示用プロパティ

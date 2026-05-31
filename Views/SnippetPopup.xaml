@@ -1,14 +1,15 @@
-<Window x:Class="SuikaTextExpander.Views.SnippetPopup"
+<Window x:Class="TeritamaLauncher.Views.SnippetPopup"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:models="clr-namespace:SuikaTextExpander.Models"
-        xmlns:local="clr-namespace:SuikaTextExpander.Views"
+        xmlns:models="clr-namespace:TeritamaLauncher.Models"
+        xmlns:local="clr-namespace:TeritamaLauncher.Views"
         Title="SnippetPopup" 
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" SizeToContent="WidthAndHeight"
         Deactivated="Window_Deactivated">
     <Window.Resources>
         <local:FolderIconConverter x:Key="FolderIconConverter"/>
+        <local:NodeIconImageConverter x:Key="NodeIconImageConverter"/>
         
         <Style TargetType="ListBoxItem">
             <Setter Property="Template">
@@ -54,14 +55,14 @@
             <Border x:Name="HeaderBorder" DockPanel.Dock="Top" Background="#F8F8F8" BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="10,6" Margin="-2,-2,-2,0" CornerRadius="6,6,0,0">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="BackIcon" Text="← " Foreground="#0078D4" Visibility="Collapsed" FontWeight="Bold"/>
-                    <TextBlock x:Name="HeaderTitle" Text="定型文一覧" FontWeight="Bold" Foreground="#666" FontSize="11"/>
+                    <TextBlock x:Name="HeaderTitle" Text="ランチャー" FontWeight="Bold" Foreground="#666" FontSize="11"/>
                 </StackPanel>
             </Border>
-
+ 
             <ListBox x:Name="SnippetList" BorderThickness="0" Background="Transparent"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ItemsSource="{Binding Nodes}"
-                     MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ItemsSource="{Binding Nodes}"
+                      MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -69,9 +70,10 @@
                             <DockPanel x:Name="ItemContent">
                                 <TextBlock x:Name="Arrow" DockPanel.Dock="Right" Text="▶" FontSize="10" VerticalAlignment="Center" Opacity="0.5" Visibility="Collapsed" Margin="10,0,0,0"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Converter={StaticResource FolderIconConverter}}" 
-                                               Margin="0,0,10,0" Opacity="0.7" FontSize="14"/>
-                                    <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="14"/>
+                                    <Image Source="{Binding Converter={StaticResource NodeIconImageConverter}}" 
+                                           Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="14" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </DockPanel>
                         </Grid>

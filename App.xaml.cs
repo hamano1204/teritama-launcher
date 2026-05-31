@@ -2,16 +2,16 @@ using System;
 using System.Windows;
 using System.Runtime.InteropServices;
 using System.Threading;
-using SuikaTextExpander.Services;
-using SuikaTextExpander.Views;
+using TeritamaLauncher.Services;
+using TeritamaLauncher.Views;
 
-namespace SuikaTextExpander
+namespace TeritamaLauncher
 {
     public partial class App : Application
     {
         private SnippetManager _snippetManager = null!;
         private HotkeyService _hotkeyService = null!;
-        private PasteService _pasteService = null!;
+        private LaunchService _launchService = null!;
         private MainWindow _hiddenWindow = null!;
         private SnippetPopup? _currentPopup;
         private static Mutex? _mutex;
@@ -20,12 +20,12 @@ namespace SuikaTextExpander
         {
             // 二重起動防止のチェック
             bool createdNew;
-            _mutex = new Mutex(true, "SuikaTextExpander-UniqueMutexName-1204", out createdNew);
+            _mutex = new Mutex(true, "TeritamaLauncher-UniqueMutexName-1204", out createdNew);
             if (!createdNew)
             {
                 _mutex.Dispose();
                 _mutex = null;
-                MessageBox.Show("Suika Text Expander はすでに起動しています。", "二重起動検知", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Teritama Launcher はすでに起動しています。", "二重起動検知", MessageBoxButton.OK, MessageBoxImage.Information);
                 Shutdown();
                 return;
             }
@@ -38,7 +38,7 @@ namespace SuikaTextExpander
             _snippetManager = new SnippetManager();
             _snippetManager.Load();
 
-            _pasteService = new PasteService();
+            _launchService = new LaunchService();
 
             _hiddenWindow = new MainWindow();
             _hiddenWindow.Show();
@@ -78,7 +78,7 @@ namespace SuikaTextExpander
 
             var popup = new SnippetPopup(_snippetManager.RootNodes, (content) => 
             {
-                _pasteService.PasteText(content);
+                _launchService.Launch(content);
             });
 
             // 1. マウス物理位置を取得 (Pixels)

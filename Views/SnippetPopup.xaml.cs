@@ -6,10 +6,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using SuikaTextExpander.Models;
-using SuikaTextExpander.Services;
+using TeritamaLauncher.Models;
+using TeritamaLauncher.Services;
 
-namespace SuikaTextExpander.Views
+namespace TeritamaLauncher.Views
 {
     public partial class SnippetPopup : Window
     {

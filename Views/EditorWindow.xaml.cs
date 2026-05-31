@@ -5,10 +5,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Win32;
-using SuikaTextExpander.Models;
-using SuikaTextExpander.Services;
+using TeritamaLauncher.Models;
+using TeritamaLauncher.Services;
 
-namespace SuikaTextExpander.Views
+namespace TeritamaLauncher.Views
 {
     public partial class EditorWindow : Window
     {
@@ -237,7 +237,11 @@ namespace SuikaTextExpander.Views
 
         private void SnippetTree_DragOver(object sender, DragEventArgs e)
         {
-            if (!e.Data.GetDataPresent("SnippetNode"))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else if (!e.Data.GetDataPresent("SnippetNode"))
             {
                 e.Effects = DragDropEffects.None;
             }
@@ -258,6 +262,45 @@ namespace SuikaTextExpander.Views
 
         private void SnippetTree_Drop(object sender, DragEventArgs e)
         {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                var targetNode = GetNodeAt(e.GetPosition(SnippetTree));
+
+                foreach (var filePath in files)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    if (string.IsNullOrEmpty(fileName)) fileName = filePath;
+
+                    var newNode = new SnippetNode
+                    {
+                        Title = fileName,
+                        Content = filePath,
+                        Type = NodeType.Snippet
+                    };
+
+                    if (targetNode == null)
+                    {
+                        _manager.RootNodes.Add(newNode);
+                    }
+                    else if (targetNode.IsFolder)
+                    {
+                        targetNode.Children.Add(newNode);
+                    }
+                    else
+                    {
+                        var parentCollection = FindParentCollection(_manager.RootNodes, targetNode);
+                        if (parentCollection != null)
+                        {
+                            int index = parentCollection.IndexOf(targetNode);
+                            parentCollection.Insert(index + 1, newNode);
+                        }
+                    }
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (e.Data.GetDataPresent("SnippetNode"))
             {
                 var droppedNode = e.Data.GetData("SnippetNode") as SnippetNode;
@@ -363,14 +406,38 @@ namespace SuikaTextExpander.Views
             this.Close();
         }
 
-        private void InsertTagButton_Click(object sender, RoutedEventArgs e)
+        private void BrowseFileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is string tag)
+            var dialog = new OpenFileDialog
             {
-                int caretIndex = ContentBox.CaretIndex;
-                ContentBox.Text = ContentBox.Text.Insert(caretIndex, tag);
-                ContentBox.CaretIndex = caretIndex + tag.Length;
-                ContentBox.Focus();
+                Filter = "All Files (*.*)|*.*|Executables (*.exe;*.cmd;*.bat;*.ps1)|*.exe;*.cmd;*.bat;*.ps1",
+                Title = "ファイル・ショートカットの選択"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                ContentBox.Text = dialog.FileName;
+                if (_selectedNode != null)
+                {
+                    _selectedNode.Content = dialog.FileName;
+                }
+            }
+        }
+
+        private void BrowseFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFolderDialog
+            {
+                Title = "フォルダの選択"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                ContentBox.Text = dialog.FolderName;
+                if (_selectedNode != null)
+                {
+                    _selectedNode.Content = dialog.FolderName;
+                }
             }
         }
 
@@ -379,8 +446,8 @@ namespace SuikaTextExpander.Views
             var dialog = new SaveFileDialog
             {
                 Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
-                FileName = "suika_backup.json",
-                Title = "定型文のエクスポート"
+                FileName = "teritama_backup.json",
+                Title = "設定のエクスポート"
             };
 
             if (dialog.ShowDialog() == true)
@@ -399,7 +466,7 @@ namespace SuikaTextExpander.Views
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show("インポートを行うと現在のすべての定型文が上書きされます。よろしいですか？", 
+            var result = MessageBox.Show("インポートを行うと現在のすべての設定が上書きされます。よろしいですか？", 
                                        "インポートの確認", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             
             if (result != MessageBoxResult.Yes) return;
@@ -407,7 +474,7 @@ namespace SuikaTextExpander.Views
             var dialog = new OpenFileDialog
             {
                 Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
-                Title = "定型文のインポート"
+                Title = "設定のインポート"
             };
 
             if (dialog.ShowDialog() == true)

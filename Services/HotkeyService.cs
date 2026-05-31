@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace SuikaTextExpander.Services
+namespace TeritamaLauncher.Services
 {
     public class HotkeyService : IDisposable
     {
