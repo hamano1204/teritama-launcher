@@ -7,12 +7,6 @@ namespace TeritamaLauncher.Services
 {
     public class HotkeyService : IDisposable
     {
-        [DllImport("user32.dll")]
-        private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
-
-        [DllImport("user32.dll")]
-        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-
         private const int HOTKEY_ID = 9000;
 
         private IntPtr _hWnd;
@@ -25,15 +19,25 @@ namespace TeritamaLauncher.Services
             Unregister(); // 既存のホットキーがあれば解除
 
             var helper = new WindowInteropHelper(window);
-            _hWnd = helper.Handle;
-            
+            IntPtr newHWnd = helper.Handle;
+
+            // ウィンドウが変わった場合は _source を作り直す
+            if (_source != null && _hWnd != newHWnd)
+            {
+                _source.RemoveHook(HwndHook);
+                _source.Dispose();
+                _source = null;
+            }
+
+            _hWnd = newHWnd;
+
             if (_source == null)
             {
                 _source = HwndSource.FromHwnd(_hWnd);
                 _source.AddHook(HwndHook);
             }
 
-            if (!RegisterHotKey(_hWnd, HOTKEY_ID, modifiers, key))
+            if (!NativeMethods.RegisterHotKey(_hWnd, HOTKEY_ID, modifiers, key))
             {
                 return false;
             }
@@ -44,14 +48,13 @@ namespace TeritamaLauncher.Services
         {
             if (_hWnd != IntPtr.Zero)
             {
-                UnregisterHotKey(_hWnd, HOTKEY_ID);
+                NativeMethods.UnregisterHotKey(_hWnd, HOTKEY_ID);
             }
         }
 
         private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            const int WM_HOTKEY = 0x0312;
-            if (msg == WM_HOTKEY && wParam.ToInt32() == HOTKEY_ID)
+            if (msg == NativeMethods.WM_HOTKEY && wParam.ToInt32() == HOTKEY_ID)
             {
                 HotkeyPressed?.Invoke(this, EventArgs.Empty);
                 handled = true;

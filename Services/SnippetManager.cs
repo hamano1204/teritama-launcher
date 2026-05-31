@@ -39,11 +39,27 @@ namespace TeritamaLauncher.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to load data: {ex.Message}");
+                try
+                {
+                    if (File.Exists(FilePath))
+                    {
+                        string bakPath = FilePath + ".bak";
+                        File.Copy(FilePath, bakPath, true);
+                        System.Diagnostics.Debug.WriteLine($"Corrupted data backed up to: {bakPath}");
+                    }
+                }
+                catch (Exception backupEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to create backup: {backupEx.Message}");
+                }
                 CreateDefaultData();
             }
         }
 
-        public void Save()
+        /// <summary>
+        /// データを保存します。保存に成功した場合は true を、失敗した場合は false を返します。
+        /// </summary>
+        public bool Save()
         {
             try
             {
@@ -55,10 +71,12 @@ namespace TeritamaLauncher.Services
                 var data = CreateStorageData();
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(FilePath, json);
+                return true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to save data: {ex.Message}");
+                return false;
             }
         }
 
@@ -87,7 +105,10 @@ namespace TeritamaLauncher.Services
                 {
                     RootNodes = new ObservableCollection<SnippetNode>(data.Snippets ?? new List<SnippetNode>());
                     Config = data.Config ?? new AppConfig();
-                    Save();
+                    if (!Save())
+                    {
+                        throw new IOException("インポート後のデータ保存に失敗しました。");
+                    }
                 }
             }
             catch (Exception ex)

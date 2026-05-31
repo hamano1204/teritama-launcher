@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Win32;
-using System.Reflection;
 
 namespace TeritamaLauncher.Services
 {
@@ -19,13 +18,11 @@ namespace TeritamaLauncher.Services
 
                     if (enable)
                     {
-                        string exePath = Assembly.GetExecutingAssembly().Location;
-                        // .NET Core/5+ returns .dll for Location sometimes, but usually .exe is next to it.
-                        // For WPF apps, we want the .exe.
-                        if (exePath.EndsWith(".dll"))
-                        {
-                            exePath = exePath.Substring(0, exePath.Length - 4) + ".exe";
-                        }
+                        // .NET 6+ では Environment.ProcessPath が確実にEXEパスを返す
+                        string? exePath = Environment.ProcessPath
+                            ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
+
+                        if (string.IsNullOrEmpty(exePath)) return;
                         key.SetValue(AppName, $"\"{exePath}\"");
                     }
                     else

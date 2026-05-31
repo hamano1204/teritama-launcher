@@ -78,8 +78,8 @@ namespace TeritamaLauncher.Views
             
             // Set WS_EX_NOACTIVATE
             var helper = new WindowInteropHelper(this);
-            int exStyle = GetWindowLong(helper.Handle, GWL_EXSTYLE);
-            SetWindowLong(helper.Handle, GWL_EXSTYLE, exStyle | WS_EX_NOACTIVATE);
+            int exStyle = NativeMethods.GetWindowLong(helper.Handle, NativeMethods.GWL_EXSTYLE);
+            NativeMethods.SetWindowLong(helper.Handle, NativeMethods.GWL_EXSTYLE, exStyle | NativeMethods.WS_EX_NOACTIVATE);
         }
 
         private void OnHookKeyDown(object? sender, KeyEventArgs e)
@@ -149,14 +149,14 @@ namespace TeritamaLauncher.Views
             _hook.Stop();
 
             var helper = new WindowInteropHelper(this);
-            IntPtr hMonitor = MonitorFromWindow(helper.Handle, 1); // MONITOR_DEFAULTTONEAREST
-            MONITORINFO mi = new MONITORINFO();
+            IntPtr hMonitor = NativeMethods.MonitorFromWindow(helper.Handle, 1); // MONITOR_DEFAULTTONEAREST
+            NativeMethods.MONITORINFO mi = new NativeMethods.MONITORINFO();
             mi.cbSize = Marshal.SizeOf(mi);
-            GetMonitorInfo(hMonitor, ref mi);
+            NativeMethods.GetMonitorInfo(hMonitor, ref mi);
 
             uint dpiX = 96, dpiY = 96;
             try {
-                GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY);
+                NativeMethods.GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY);
             } catch { }
             double scaleX = dpiX / 96.0;
             double scaleY = dpiY / 96.0;
@@ -179,10 +179,12 @@ namespace TeritamaLauncher.Views
 
             double childWidth = this.ActualWidth > 0 ? this.ActualWidth : 200;
             double left = this.Left + this.ActualWidth - 4; // slight overlap
+            bool isLeftPositioned = false;
 
             if (left + childWidth > workRight)
             {
                 left = this.Left - childWidth + 4;
+                isLeftPositioned = true;
             }
             if (left < workLeft) left = workLeft + 2;
 
@@ -209,7 +211,16 @@ namespace TeritamaLauncher.Views
                 if (!child.IsLoaded) return;
 
                 double height = child.ActualHeight;
+                double width = child.ActualWidth;
                 double y = child.Top;
+                double x = child.Left;
+
+                if (isLeftPositioned)
+                {
+                    x = this.Left - width + 4;
+                    if (x < workLeft) x = workLeft + 2;
+                    child.Left = x;
+                }
 
                 if (y + height > workBottom)
                 {
@@ -332,8 +343,8 @@ namespace TeritamaLauncher.Views
         /// <returns>いずれかのポップアップ上にあれば true、そうでなければ false</returns>
         private bool IsMouseOverAnyPopup()
         {
-            POINT mousePt;
-            GetCursorPos(out mousePt);
+            NativeMethods.POINT mousePt;
+            NativeMethods.GetCursorPos(out mousePt);
 
             SnippetPopup? root = this;
             while (root._parentPopup != null)
@@ -345,10 +356,10 @@ namespace TeritamaLauncher.Views
             while (current != null)
             {
                 var helper = new WindowInteropHelper(current);
-                IntPtr hMonitor = MonitorFromWindow(helper.Handle, 1);
+                IntPtr hMonitor = NativeMethods.MonitorFromWindow(helper.Handle, 1);
                 uint dpiX = 96, dpiY = 96;
                 try {
-                    GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY);
+                    NativeMethods.GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY);
                 } catch {}
                 double scaleX = dpiX / 96.0;
                 double scaleY = dpiY / 96.0;
@@ -393,49 +404,7 @@ namespace TeritamaLauncher.Views
         }
 
         #region Native Methods
-        private const int GWL_EXSTYLE = -20;
-        private const int WS_EX_NOACTIVATE = 0x08000000;
-
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
-
-        [DllImport("shcore.dll")]
-        private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetCursorPos(out POINT lpPoint);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public struct MONITORINFO
-        {
-            public int cbSize;
-            public RECT rcMonitor;
-            public RECT rcWork;
-            public uint dwFlags;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
-        {
-            public int Left, Top, Right, Bottom;
-        }
+        // Centralized in NativeMethods class
         #endregion
     }
 }

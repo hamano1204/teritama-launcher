@@ -15,13 +15,11 @@ namespace TeritamaLauncher
         {
             try
             {
-                string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                if (exePath.EndsWith(".dll"))
-                {
-                    exePath = exePath.Substring(0, exePath.Length - 4) + ".exe";
-                }
+                // .NET 6+ では Environment.ProcessPath が確実にEXEパスを返す
+                string? exePath = Environment.ProcessPath
+                    ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
 
-                if (System.IO.File.Exists(exePath))
+                if (!string.IsNullOrEmpty(exePath) && System.IO.File.Exists(exePath))
                 {
                     var icon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
                     if (icon != null)

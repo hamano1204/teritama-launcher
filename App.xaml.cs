@@ -82,18 +82,18 @@ namespace TeritamaLauncher
             });
 
             // 1. マウス物理位置を取得 (Pixels)
-            GetCursorPos(out POINT mousePt);
+            NativeMethods.GetCursorPos(out NativeMethods.POINT mousePt);
             
             // 2. モニタ情報取得 (Pixels)
-            IntPtr hMonitor = MonitorFromPoint(mousePt, 1); // MONITOR_DEFAULTTONEAREST
-            MONITORINFO mi = new MONITORINFO();
+            IntPtr hMonitor = NativeMethods.MonitorFromPoint(mousePt, 1); // MONITOR_DEFAULTTONEAREST
+            NativeMethods.MONITORINFO mi = new NativeMethods.MONITORINFO();
             mi.cbSize = Marshal.SizeOf(mi);
-            GetMonitorInfo(hMonitor, ref mi);
+            NativeMethods.GetMonitorInfo(hMonitor, ref mi);
 
             // 3. モニタのDPI（拡大率）を取得
             uint dpiX = 96, dpiY = 96;
             try {
-                GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY); // MDT_EFFECTIVE_DPI = 0
+                NativeMethods.GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY); // MDT_EFFECTIVE_DPI = 0
             } catch {
             }
             double scaleX = dpiX / 96.0;
@@ -149,41 +149,6 @@ namespace TeritamaLauncher
                 popup.Opacity = 1;
 
             }, System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetCursorPos(out POINT lpPoint);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
-
-        [DllImport("shcore.dll")]
-        private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public struct MONITORINFO
-        {
-            public int cbSize;
-            public RECT rcMonitor;
-            public RECT rcWork;
-            public uint dwFlags;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
-        {
-            public int Left, Top, Right, Bottom;
         }
 
         public void ShowEditor()

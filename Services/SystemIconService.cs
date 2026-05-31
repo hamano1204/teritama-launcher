@@ -182,7 +182,7 @@ namespace TeritamaLauncher.Services
                     Int32Rect.Empty,
                     BitmapSizeOptions.FromEmptyOptions());
                 
-                // Imaging.CreateBitmapSourceFromHIcon copies the icon, so we must destroy the original handle to prevent leaks.
+                imageSource.Freeze(); // Freeze to make thread-safe and improve rendering performance
                 return imageSource;
             }
             catch
@@ -197,13 +197,14 @@ namespace TeritamaLauncher.Services
 
         private static ImageSource CreateFallbackEmptySource()
         {
-            // 空のビットマップを返す
-            return BitmapSource.Create(
+            var fallback = BitmapSource.Create(
                 1, 1, 96, 96, 
                 PixelFormats.Pbgra32, 
                 null, 
                 new byte[] { 0, 0, 0, 0 }, 
                 4);
+            fallback.Freeze(); // Freeze fallback as well
+            return fallback;
         }
 
         private static string ResolveFullPath(string path)

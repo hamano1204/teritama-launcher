@@ -8,14 +8,15 @@
         Topmost="True" ShowInTaskbar="False" SizeToContent="WidthAndHeight"
         Deactivated="Window_Deactivated">
     <Window.Resources>
-        <local:FolderIconConverter x:Key="FolderIconConverter"/>
         <local:NodeIconImageConverter x:Key="NodeIconImageConverter"/>
         
         <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="Border" Padding="12,8" Background="Transparent" CornerRadius="4">
+                        <Border x:Name="Border" Padding="{TemplateBinding Padding}" Background="Transparent" CornerRadius="4">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -59,14 +60,14 @@
                 </StackPanel>
             </Border>
  
-            <ListBox x:Name="SnippetList" BorderThickness="0" Background="Transparent"
-                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      ItemsSource="{Binding Nodes}"
-                      MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
+            <ListBox x:Name="SnippetList" BorderThickness="0" Padding="0" Margin="0" Background="Transparent"
+                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                       ItemsSource="{Binding Nodes}"
+                       MouseLeftButtonUp="SnippetList_MouseLeftButtonUp">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
-                            <Rectangle x:Name="SeparatorControl" Height="1" Fill="#BBB" Margin="0,6" Visibility="Collapsed"/>
+                            <Rectangle x:Name="SeparatorControl" Height="1" Fill="#BBB" Margin="-2,6" Visibility="Collapsed"/>
                             <DockPanel x:Name="ItemContent">
                                 <TextBlock x:Name="Arrow" DockPanel.Dock="Right" Text="▶" FontSize="10" VerticalAlignment="Center" Opacity="0.5" Visibility="Collapsed" Margin="10,0,0,0"/>
                                 <StackPanel Orientation="Horizontal">

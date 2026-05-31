@@ -7,6 +7,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using TeritamaLauncher.Models;
 using TeritamaLauncher.Services;
+using static TeritamaLauncher.Services.NativeMethods;
 
 namespace TeritamaLauncher.Views
 {
@@ -27,10 +28,10 @@ namespace TeritamaLauncher.Views
             AutoStartCheckBox.IsChecked = StartupService.IsStartupEnabled();
 
             // ホットキー装飾キーの初期化
-            ModifierAlt.IsChecked = (_manager.Config.HotkeyModifiers & 0x0001) != 0;
-            ModifierCtrl.IsChecked = (_manager.Config.HotkeyModifiers & 0x0002) != 0;
-            ModifierShift.IsChecked = (_manager.Config.HotkeyModifiers & 0x0004) != 0;
-            ModifierWin.IsChecked = (_manager.Config.HotkeyModifiers & 0x0008) != 0;
+            ModifierAlt.IsChecked   = (_manager.Config.HotkeyModifiers & MOD_ALT)   != 0;
+            ModifierCtrl.IsChecked  = (_manager.Config.HotkeyModifiers & MOD_CTRL)  != 0;
+            ModifierShift.IsChecked = (_manager.Config.HotkeyModifiers & MOD_SHIFT) != 0;
+            ModifierWin.IsChecked   = (_manager.Config.HotkeyModifiers & MOD_WIN)   != 0;
         }
 
         private void SnippetTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -121,11 +122,10 @@ namespace TeritamaLauncher.Views
 
             if (MessageBox.Show("削除してもよろしいですか？", "確認", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                if (!RemoveNode(_manager.RootNodes, _selectedNode))
-                {
-                    // RootNodesから削除できなかった場合、子ノードのいずれかから削除されたはず
-                }
+                RemoveNode(_manager.RootNodes, _selectedNode);
+                _selectedNode = null; // 削除後は参照をクリアして幽霊更新を防ぐ
                 EditorGrid.Visibility = Visibility.Collapsed;
+                EmptyState.Visibility = Visibility.Visible;
             }
         }
 
@@ -386,17 +386,30 @@ namespace TeritamaLauncher.Views
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            // ホットキーバリデーション
+            if (_recordedKey == 0)
+            {
+                MessageBox.Show("ホットキーのキーが設定されていません。\nキーボードショートカット設定でキーを選択してください。",
+                    "入力エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             // ホットキー装飾キーの取得
             uint modifiers = 0;
-            if (ModifierAlt.IsChecked == true) modifiers |= 0x0001;
-            if (ModifierCtrl.IsChecked == true) modifiers |= 0x0002;
-            if (ModifierShift.IsChecked == true) modifiers |= 0x0004;
-            if (ModifierWin.IsChecked == true) modifiers |= 0x0008;
+            if (ModifierAlt.IsChecked   == true) modifiers |= MOD_ALT;
+            if (ModifierCtrl.IsChecked  == true) modifiers |= MOD_CTRL;
+            if (ModifierShift.IsChecked == true) modifiers |= MOD_SHIFT;
+            if (ModifierWin.IsChecked   == true) modifiers |= MOD_WIN;
 
             _manager.Config.HotkeyModifiers = modifiers;
             _manager.Config.HotkeyKey = _recordedKey;
 
-            _manager.Save();
+            if (!_manager.Save())
+            {
+                MessageBox.Show("設定の保存に失敗しました。\nディスクの空き容量を確認してください。",
+                    "保存エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             ((App)Application.Current).UpdateHotkey();
             this.Close();
         }
