@@ -28,7 +28,14 @@ namespace TeritamaLauncher.Services
                     var data = JsonConvert.DeserializeObject<StorageData>(json);
                     if (data != null)
                     {
-                        RootNodes = new ObservableCollection<SnippetNode>(data.Snippets ?? new List<SnippetNode>());
+                        RootNodes.Clear();
+                        if (data.Snippets != null)
+                        {
+                            foreach (var node in data.Snippets)
+                            {
+                                RootNodes.Add(node);
+                            }
+                        }
                         Config = data.Config ?? new AppConfig();
                         return;
                     }
@@ -103,7 +110,14 @@ namespace TeritamaLauncher.Services
                 var data = JsonConvert.DeserializeObject<StorageData>(json);
                 if (data != null)
                 {
-                    RootNodes = new ObservableCollection<SnippetNode>(data.Snippets ?? new List<SnippetNode>());
+                    RootNodes.Clear();
+                    if (data.Snippets != null)
+                    {
+                        foreach (var node in data.Snippets)
+                        {
+                            RootNodes.Add(node);
+                        }
+                    }
                     Config = data.Config ?? new AppConfig();
                     if (!Save())
                     {
@@ -129,22 +143,16 @@ namespace TeritamaLauncher.Services
 
         private void CreateDefaultData()
         {
-            RootNodes = new ObservableCollection<SnippetNode>
-            {
-                new SnippetNode { Title = "便利ツール", Type = NodeType.Folder },
-                new SnippetNode { Title = "Google (ウェブサイト)", Content = "https://google.com", Type = NodeType.Snippet }
-            };
-            RootNodes[0].Children.Add(new SnippetNode { Title = "メモ帳", Content = "notepad.exe", Type = NodeType.Snippet });
-            RootNodes[0].Children.Add(new SnippetNode { Title = "電卓", Content = "calc.exe", Type = NodeType.Snippet });
+            RootNodes.Clear();
+            var toolFolder = new SnippetNode { Title = "便利ツール", Type = NodeType.Folder };
+            toolFolder.Children.Add(new SnippetNode { Title = "メモ帳", Content = "notepad.exe", Type = NodeType.Snippet });
+            toolFolder.Children.Add(new SnippetNode { Title = "電卓", Content = "calc.exe", Type = NodeType.Snippet });
+
+            RootNodes.Add(toolFolder);
+            RootNodes.Add(new SnippetNode { Title = "Google (ウェブサイト)", Content = "https://google.com", Type = NodeType.Snippet });
 
             Config = new AppConfig();
             Save();
         }
-    }
-
-    public class StorageData
-    {
-        public AppConfig Config { get; set; } = new AppConfig();
-        public List<SnippetNode> Snippets { get; set; } = new List<SnippetNode>();
     }
 }

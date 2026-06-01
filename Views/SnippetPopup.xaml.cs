@@ -13,7 +13,7 @@ namespace TeritamaLauncher.Views
 {
     public partial class SnippetPopup : Window
     {
-        private readonly KeyboardHookService _hook;
+        private readonly KeyboardHookService? _hook;
         private readonly MouseHookService? _mouseHook;
         private readonly Action<string> _onPaste;
         private List<SnippetNode> _currentNodes;
@@ -32,8 +32,6 @@ namespace TeritamaLauncher.Views
         {
             InitializeComponent();
             _parentPopup = parent;
-            _hook = new KeyboardHookService();
-            _hook.HookKeyDown += OnHookKeyDown;
             _onPaste = onPaste;
             
             _currentNodes = rootNodes.ToList();
@@ -53,12 +51,14 @@ namespace TeritamaLauncher.Views
 
             if (_parentPopup == null)
             {
+                _hook = new KeyboardHookService();
+                _hook.HookKeyDown += OnHookKeyDown;
+                _hook.Start();
+
                 _mouseHook = new MouseHookService();
                 _mouseHook.MouseClicked += OnMouseHookClicked;
                 _mouseHook.Start();
             }
-
-            _hook.Start();
         }
 
         private void OnMouseHookClicked(object? sender, EventArgs e)
@@ -82,58 +82,72 @@ namespace TeritamaLauncher.Views
             NativeMethods.SetWindowLong(helper.Handle, NativeMethods.GWL_EXSTYLE, exStyle | NativeMethods.WS_EX_NOACTIVATE);
         }
 
+        private SnippetPopup GetActivePopup()
+        {
+            SnippetPopup current = this;
+            while (current._childPopup != null)
+            {
+                current = current._childPopup;
+            }
+            return current;
+        }
+
         private void OnHookKeyDown(object? sender, KeyEventArgs e)
         {
-            Dispatcher.Invoke(() =>
+            // UIスレッド上で直接同期的に実行（デッドロックリスク回避）
+            SnippetPopup activePopup = GetActivePopup();
+            activePopup.HandleKeyDown(e);
+        }
+
+        public void HandleKeyDown(KeyEventArgs e)
+        {
+            switch (e.Key)
             {
-                switch (e.Key)
-                {
-                    case Key.Down:
-                        {
-                            int nextIndex = SnippetList.SelectedIndex;
-                            do {
-                                nextIndex = (nextIndex + 1) % SnippetList.Items.Count;
-                            } while (_currentNodes[nextIndex].IsSeparator && nextIndex != SnippetList.SelectedIndex);
-                            
-                            SnippetList.SelectedIndex = nextIndex;
-                            e.Handled = true;
-                        }
-                        break;
-                    case Key.Up:
-                        {
-                            int prevIndex = SnippetList.SelectedIndex;
-                            do {
-                                prevIndex = (prevIndex - 1 + SnippetList.Items.Count) % SnippetList.Items.Count;
-                            } while (_currentNodes[prevIndex].IsSeparator && prevIndex != SnippetList.SelectedIndex);
-                            
-                            SnippetList.SelectedIndex = prevIndex;
-                            e.Handled = true;
-                        }
-                        break;
-                    case Key.Enter:
-                        ExecuteSelection();
+                case Key.Down:
+                    {
+                        int nextIndex = SnippetList.SelectedIndex;
+                        do {
+                            nextIndex = (nextIndex + 1) % SnippetList.Items.Count;
+                        } while (_currentNodes[nextIndex].IsSeparator && nextIndex != SnippetList.SelectedIndex);
+                        
+                        SnippetList.SelectedIndex = nextIndex;
                         e.Handled = true;
-                        break;
-                    case Key.Right:
-                        if (SnippetList.SelectedItem is SnippetNode node && node.IsFolder)
-                        {
-                            NavigateInto(node);
-                            e.Handled = true;
-                        }
-                        break;
-                    case Key.Left:
-                    case Key.Back:
-                        if (NavigateBack())
-                        {
-                            e.Handled = true;
-                        }
-                        break;
-                    case Key.Escape:
-                        CloseAll();
+                    }
+                    break;
+                case Key.Up:
+                    {
+                        int prevIndex = SnippetList.SelectedIndex;
+                        do {
+                            prevIndex = (prevIndex - 1 + SnippetList.Items.Count) % SnippetList.Items.Count;
+                        } while (_currentNodes[prevIndex].IsSeparator && prevIndex != SnippetList.SelectedIndex);
+                        
+                        SnippetList.SelectedIndex = prevIndex;
                         e.Handled = true;
-                        break;
-                }
-            });
+                    }
+                    break;
+                case Key.Enter:
+                    ExecuteSelection();
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    if (SnippetList.SelectedItem is SnippetNode node && node.IsFolder)
+                    {
+                        NavigateInto(node);
+                        e.Handled = true;
+                    }
+                    break;
+                case Key.Left:
+                case Key.Back:
+                    if (NavigateBack())
+                    {
+                        e.Handled = true;
+                    }
+                    break;
+                case Key.Escape:
+                    CloseAll();
+                    e.Handled = true;
+                    break;
+            }
         }
 
         private void NavigateInto(SnippetNode node)
@@ -145,8 +159,6 @@ namespace TeritamaLauncher.Views
                 _childPopup = null;
                 temp.CloseFromThisAndChildren();
             }
-
-            _hook.Stop();
 
             var helper = new WindowInteropHelper(this);
             IntPtr hMonitor = NativeMethods.MonitorFromWindow(helper.Handle, 1); // MONITOR_DEFAULTTONEAREST
@@ -198,10 +210,6 @@ namespace TeritamaLauncher.Views
             child.Closed += (s, ev) =>
             {
                 _childPopup = null;
-                if (!_isClosingAll)
-                {
-                    this._hook.Start();
-                }
             };
 
             child.Show();
@@ -389,9 +397,12 @@ namespace TeritamaLauncher.Views
         protected override void OnClosed(EventArgs e)
         {
             _isClosed = true;
-            _hook.HookKeyDown -= OnHookKeyDown;
-            _hook.Stop();
-            _hook.Dispose();
+            if (_hook != null)
+            {
+                _hook.HookKeyDown -= OnHookKeyDown;
+                _hook.Stop();
+                _hook.Dispose();
+            }
 
             if (_mouseHook != null)
             {

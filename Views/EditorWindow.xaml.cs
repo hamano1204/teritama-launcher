@@ -94,7 +94,7 @@ namespace TeritamaLauncher.Views
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            var newNode = new SnippetNode { Title = "新規定型文", Type = NodeType.Snippet };
+            var newNode = new SnippetNode { Title = "新規項目", Type = NodeType.Snippet };
             AddNode(newNode);
         }
 
@@ -120,6 +120,62 @@ namespace TeritamaLauncher.Views
             {
                 _manager.RootNodes.Add(newNode);
             }
+
+            FocusAndSelectNode(newNode);
+        }
+
+        private void FocusAndSelectNode(SnippetNode targetNode)
+        {
+            // WPFのコンテナ（TreeViewItem）が生成されるのを確実に待つためにDispatcherを使用
+            Dispatcher.InvokeAsync(() =>
+            {
+                var item = FindTreeViewItem(SnippetTree, targetNode);
+                if (item != null)
+                {
+                    item.IsSelected = true;
+                    item.Focus();
+                    item.BringIntoView();
+                }
+            }, System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        private TreeViewItem? FindTreeViewItem(ItemsControl container, object item)
+        {
+            if (container == null) return null;
+
+            // コンテナがTreeViewItem自身であり、データオブジェクトが一致した場合
+            if (container is TreeViewItem tvi && tvi.DataContext == item)
+            {
+                return tvi;
+            }
+
+            // 親が閉じている場合は、子要素を探索する前に展開してレイアウトを更新する
+            if (container is TreeViewItem parentTvi && !parentTvi.IsExpanded)
+            {
+                parentTvi.IsExpanded = true;
+                parentTvi.UpdateLayout();
+            }
+
+            for (int i = 0; i < container.Items.Count; i++)
+            {
+                var childContainer = container.ItemContainerGenerator.ContainerFromIndex(i) as ItemsControl;
+                if (childContainer == null)
+                {
+                    container.UpdateLayout();
+                    childContainer = container.ItemContainerGenerator.ContainerFromIndex(i) as ItemsControl;
+                }
+
+                if (childContainer != null)
+                {
+                    var result = FindTreeViewItem(childContainer, item);
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -151,23 +207,24 @@ namespace TeritamaLauncher.Views
         {
             if (vk >= 65 && vk <= 90) return ((char)vk).ToString(); // A-Z
             if (vk >= 48 && vk <= 57) return ((char)vk).ToString(); // 0-9
-            switch (vk)
+            
+            return vk switch
             {
-                case 112: return "F1";
-                case 113: return "F2";
-                case 114: return "F3";
-                case 115: return "F4";
-                case 116: return "F5";
-                case 117: return "F6";
-                case 118: return "F7";
-                case 119: return "F8";
-                case 120: return "F9";
-                case 121: return "F10";
-                case 122: return "F11";
-                case 123: return "F12";
-                case 32: return "Space";
-                default: return ((char)vk).ToString();
-            }
+                112 => "F1",
+                113 => "F2",
+                114 => "F3",
+                115 => "F4",
+                116 => "F5",
+                117 => "F6",
+                118 => "F7",
+                119 => "F8",
+                120 => "F9",
+                121 => "F10",
+                122 => "F11",
+                123 => "F12",
+                32  => "Space",
+                _   => ((char)vk).ToString()
+            };
         }
 
         private void HotkeyCharBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -328,6 +385,7 @@ namespace TeritamaLauncher.Views
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 var targetNode = GetNodeAt(e.GetPosition(SnippetTree));
+                SnippetNode? lastAddedNode = null;
 
                 foreach (var filePath in files)
                 {
@@ -340,6 +398,7 @@ namespace TeritamaLauncher.Views
                         Content = filePath,
                         Type = NodeType.Snippet
                     };
+                    lastAddedNode = newNode;
 
                     if (targetNode == null)
                     {
@@ -365,6 +424,10 @@ namespace TeritamaLauncher.Views
                             }
                         }
                     }
+                }
+                if (lastAddedNode != null)
+                {
+                    FocusAndSelectNode(lastAddedNode);
                 }
                 ClearDragIndicators();
                 e.Handled = true;
@@ -413,6 +476,7 @@ namespace TeritamaLauncher.Views
                             }
                         }
                     }
+                    FocusAndSelectNode(droppedNode);
                 }
             }
             ClearDragIndicators();
@@ -500,6 +564,15 @@ namespace TeritamaLauncher.Views
             this.Close();
         }
 
+        private void UpdateSelectedNodeContent(string path)
+        {
+            ContentBox.Text = path;
+            if (_selectedNode != null)
+            {
+                _selectedNode.Content = path;
+            }
+        }
+
         private void BrowseFileButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -510,11 +583,7 @@ namespace TeritamaLauncher.Views
 
             if (dialog.ShowDialog() == true)
             {
-                ContentBox.Text = dialog.FileName;
-                if (_selectedNode != null)
-                {
-                    _selectedNode.Content = dialog.FileName;
-                }
+                UpdateSelectedNodeContent(dialog.FileName);
             }
         }
 
@@ -527,11 +596,7 @@ namespace TeritamaLauncher.Views
 
             if (dialog.ShowDialog() == true)
             {
-                ContentBox.Text = dialog.FolderName;
-                if (_selectedNode != null)
-                {
-                    _selectedNode.Content = dialog.FolderName;
-                }
+                UpdateSelectedNodeContent(dialog.FolderName);
             }
         }
 
@@ -576,9 +641,6 @@ namespace TeritamaLauncher.Views
                 try
                 {
                     _manager.Import(dialog.FileName);
-                    // TreeViewの再読み込みを促すためにItemsSourceを再セット（あるいはPropertyChangedが必要）
-                    SnippetTree.ItemsSource = null;
-                    SnippetTree.ItemsSource = _manager.RootNodes;
                     
                     MessageBox.Show("インポートが完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
                 }

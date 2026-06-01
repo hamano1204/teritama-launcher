@@ -108,6 +108,13 @@ namespace TeritamaLauncher
             popup.WindowStartupLocation = WindowStartupLocation.Manual;
             popup.Left = initialX;
             popup.Top = initialY;
+            popup.Closed += (s, ev) =>
+            {
+                if (_currentPopup == popup)
+                {
+                    _currentPopup = null;
+                }
+            };
             popup.Show();
             _currentPopup = popup;
 
