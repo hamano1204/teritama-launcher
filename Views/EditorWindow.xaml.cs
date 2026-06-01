@@ -17,6 +17,8 @@ namespace TeritamaLauncher.Views
         private SnippetNode? _selectedNode;
         private Point _startPoint;
         private SnippetNode? _draggedNode;
+        private TreeViewItem? _lastHoveredItem;
+        private DropPosition _lastDropPosition = DropPosition.None;
 
         public EditorWindow(SnippetManager manager)
         {
@@ -32,6 +34,10 @@ namespace TeritamaLauncher.Views
             ModifierCtrl.IsChecked  = (_manager.Config.HotkeyModifiers & MOD_CTRL)  != 0;
             ModifierShift.IsChecked = (_manager.Config.HotkeyModifiers & MOD_SHIFT) != 0;
             ModifierWin.IsChecked   = (_manager.Config.HotkeyModifiers & MOD_WIN)   != 0;
+
+            // バージョン情報の表示
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            VersionText.Text = $"v{version?.ToString(3) ?? "1.0.0"}";
         }
 
         private void SnippetTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -244,20 +250,76 @@ namespace TeritamaLauncher.Views
             else if (!e.Data.GetDataPresent("SnippetNode"))
             {
                 e.Effects = DragDropEffects.None;
+                ClearDragIndicators();
             }
             else
             {
-                var targetNode = GetNodeAt(e.GetPosition(SnippetTree));
+                var hitTestResult = VisualTreeHelper.HitTest(SnippetTree, e.GetPosition(SnippetTree));
+                var treeViewItem = hitTestResult != null ? FindAncestor<TreeViewItem>(hitTestResult.VisualHit) : null;
+                var targetNode = treeViewItem?.DataContext as SnippetNode;
+
                 if (targetNode != null && _draggedNode != null && (_draggedNode == targetNode || IsChildOf(_draggedNode, targetNode)))
                 {
                     e.Effects = DragDropEffects.None;
+                    ClearDragIndicators();
                 }
                 else
                 {
                     e.Effects = DragDropEffects.Move;
+
+                    if (treeViewItem != null)
+                    {
+                        Point relativePos = e.GetPosition(treeViewItem);
+                        double height = treeViewItem.ActualHeight;
+                        DropPosition position = DropPosition.None;
+
+                        if (targetNode != null && targetNode.IsFolder)
+                        {
+                            if (relativePos.Y < height * 0.3)
+                                position = DropPosition.Before;
+                            else if (relativePos.Y > height * 0.7)
+                                position = DropPosition.After;
+                            else
+                                position = DropPosition.Inside;
+                        }
+                        else
+                        {
+                            if (relativePos.Y < height * 0.5)
+                                position = DropPosition.Before;
+                            else
+                                position = DropPosition.After;
+                        }
+
+                        if (_lastHoveredItem != treeViewItem || _lastDropPosition != position)
+                        {
+                            ClearDragIndicators();
+                            _lastHoveredItem = treeViewItem;
+                            _lastDropPosition = position;
+                            DragDropHelper.SetDropPosition(treeViewItem, position);
+                        }
+                    }
+                    else
+                    {
+                        ClearDragIndicators();
+                    }
                 }
             }
             e.Handled = true;
+        }
+
+        private void SnippetTree_DragLeave(object sender, DragEventArgs e)
+        {
+            ClearDragIndicators();
+        }
+
+        private void ClearDragIndicators()
+        {
+            if (_lastHoveredItem != null)
+            {
+                DragDropHelper.SetDropPosition(_lastHoveredItem, DropPosition.None);
+                _lastHoveredItem = null;
+                _lastDropPosition = DropPosition.None;
+            }
         }
 
         private void SnippetTree_Drop(object sender, DragEventArgs e)
@@ -283,7 +345,7 @@ namespace TeritamaLauncher.Views
                     {
                         _manager.RootNodes.Add(newNode);
                     }
-                    else if (targetNode.IsFolder)
+                    else if (_lastDropPosition == DropPosition.Inside && targetNode.IsFolder)
                     {
                         targetNode.Children.Add(newNode);
                     }
@@ -293,10 +355,18 @@ namespace TeritamaLauncher.Views
                         if (parentCollection != null)
                         {
                             int index = parentCollection.IndexOf(targetNode);
-                            parentCollection.Insert(index + 1, newNode);
+                            if (_lastDropPosition == DropPosition.Before)
+                            {
+                                parentCollection.Insert(index, newNode);
+                            }
+                            else
+                            {
+                                parentCollection.Insert(index + 1, newNode);
+                            }
                         }
                     }
                 }
+                ClearDragIndicators();
                 e.Handled = true;
                 return;
             }
@@ -309,7 +379,11 @@ namespace TeritamaLauncher.Views
                 if (droppedNode != null && droppedNode != targetNode)
                 {
                     // 自分自身を自分の子に移動しようとしていないかチェック
-                    if (targetNode != null && IsChildOf(droppedNode, targetNode)) return;
+                    if (targetNode != null && IsChildOf(droppedNode, targetNode))
+                    {
+                        ClearDragIndicators();
+                        return;
+                    }
 
                     // 元の場所から削除
                     RemoveNode(_manager.RootNodes, droppedNode);
@@ -319,22 +393,29 @@ namespace TeritamaLauncher.Views
                     {
                         _manager.RootNodes.Add(droppedNode);
                     }
-                    else if (targetNode.IsFolder)
+                    else if (_lastDropPosition == DropPosition.Inside && targetNode.IsFolder)
                     {
                         targetNode.Children.Add(droppedNode);
                     }
                     else
                     {
-                        // フォルダ以外のアイテムの上に落とした場合は、そのアイテムと同じ親のコレクションに追加
                         var parentCollection = FindParentCollection(_manager.RootNodes, targetNode);
                         if (parentCollection != null)
                         {
                             int index = parentCollection.IndexOf(targetNode);
-                            parentCollection.Insert(index + 1, droppedNode);
+                            if (_lastDropPosition == DropPosition.Before)
+                            {
+                                parentCollection.Insert(index, droppedNode);
+                            }
+                            else
+                            {
+                                parentCollection.Insert(index + 1, droppedNode);
+                            }
                         }
                     }
                 }
             }
+            ClearDragIndicators();
         }
 
         private SnippetNode? GetNodeAt(Point pos)
@@ -507,5 +588,23 @@ namespace TeritamaLauncher.Views
                 }
             }
         }
+    }
+
+    public enum DropPosition
+    {
+        None,
+        Before,
+        After,
+        Inside
+    }
+
+    public static class DragDropHelper
+    {
+        public static readonly DependencyProperty DropPositionProperty =
+            DependencyProperty.RegisterAttached("DropPosition", typeof(DropPosition), typeof(DragDropHelper),
+                new FrameworkPropertyMetadata(DropPosition.None, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public static DropPosition GetDropPosition(DependencyObject obj) => (DropPosition)obj.GetValue(DropPositionProperty);
+        public static void SetDropPosition(DependencyObject obj, DropPosition value) => obj.SetValue(DropPositionProperty, value);
     }
 }

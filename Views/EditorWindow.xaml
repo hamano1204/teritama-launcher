@@ -189,7 +189,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="2" Margin="5">
-                     <TextBlock Text="v1.0.0" Foreground="{StaticResource Win11TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
+                     <TextBlock x:Name="VersionText" Text="v1.0.0" Foreground="{StaticResource Win11TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -230,6 +230,7 @@
                                   PreviewMouseLeftButtonDown="SnippetTree_PreviewMouseLeftButtonDown"
                                   MouseMove="SnippetTree_MouseMove"
                                   DragOver="SnippetTree_DragOver"
+                                  DragLeave="SnippetTree_DragLeave"
                                   Drop="SnippetTree_Drop">
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem">
@@ -239,12 +240,35 @@
                             </TreeView.ItemContainerStyle>
                             <TreeView.ItemTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type models:SnippetNode}" ItemsSource="{Binding Children}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{Binding Converter={StaticResource NodeIconImageConverter}}" 
-                                               Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"
-                                               RenderOptions.BitmapScalingMode="HighQuality"/>
-                                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource Win11TextPrimary}" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Border x:Name="ItemHeaderBorder" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" SnapsToDevicePixels="True" CornerRadius="4" Padding="5,3">
+                                        <Grid>
+                                            <!-- Top Line Indicator -->
+                                            <Border x:Name="TopLine" Height="2" Background="{StaticResource Win11Accent}" VerticalAlignment="Top" Margin="-6,-4,-6,0" Visibility="Collapsed"/>
+                                            
+                                            <!-- Bottom Line Indicator -->
+                                            <Border x:Name="BottomLine" Height="2" Background="{StaticResource Win11Accent}" VerticalAlignment="Bottom" Margin="-6,0,-6,-4" Visibility="Collapsed"/>
+                                            
+                                            <!-- Content -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                <Image Source="{Binding Converter={StaticResource NodeIconImageConverter}}" 
+                                                       Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                <TextBlock Text="{Binding Title}" Foreground="{StaticResource Win11TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <HierarchicalDataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=(local:DragDropHelper.DropPosition)}" Value="Before">
+                                            <Setter TargetName="TopLine" Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=(local:DragDropHelper.DropPosition)}" Value="After">
+                                            <Setter TargetName="BottomLine" Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=(local:DragDropHelper.DropPosition)}" Value="Inside">
+                                            <Setter TargetName="ItemHeaderBorder" Property="Background" Value="#E1F0FE"/>
+                                            <Setter TargetName="ItemHeaderBorder" Property="BorderBrush" Value="{StaticResource Win11Accent}"/>
+                                        </DataTrigger>
+                                    </HierarchicalDataTemplate.Triggers>
                                 </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>
                         </TreeView>
