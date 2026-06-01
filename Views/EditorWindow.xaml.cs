@@ -300,65 +300,66 @@ namespace TeritamaLauncher.Views
 
         private void SnippetTree_DragOver(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            bool isFileDrop = e.Data.GetDataPresent(DataFormats.FileDrop);
+            bool isInternalNode = e.Data.GetDataPresent("SnippetNode");
+
+            if (!isFileDrop && !isInternalNode)
             {
-                e.Effects = DragDropEffects.Copy;
+                e.Effects = DragDropEffects.None;
+                ClearDragIndicators();
+                e.Handled = true;
+                return;
             }
-            else if (!e.Data.GetDataPresent("SnippetNode"))
+
+            // 外部ファイルドラッグ時は Copy、内部ノード移動時は Move
+            e.Effects = isFileDrop ? DragDropEffects.Copy : DragDropEffects.Move;
+
+            var hitTestResult = VisualTreeHelper.HitTest(SnippetTree, e.GetPosition(SnippetTree));
+            var treeViewItem = hitTestResult != null ? FindAncestor<TreeViewItem>(hitTestResult.VisualHit) : null;
+            var targetNode = treeViewItem?.DataContext as SnippetNode;
+
+            // 内部ノード移動時のみ、自己子ノードへのドロップを防ぐ
+            if (isInternalNode && targetNode != null && _draggedNode != null && (_draggedNode == targetNode || IsChildOf(_draggedNode, targetNode)))
             {
                 e.Effects = DragDropEffects.None;
                 ClearDragIndicators();
             }
             else
             {
-                var hitTestResult = VisualTreeHelper.HitTest(SnippetTree, e.GetPosition(SnippetTree));
-                var treeViewItem = hitTestResult != null ? FindAncestor<TreeViewItem>(hitTestResult.VisualHit) : null;
-                var targetNode = treeViewItem?.DataContext as SnippetNode;
-
-                if (targetNode != null && _draggedNode != null && (_draggedNode == targetNode || IsChildOf(_draggedNode, targetNode)))
+                if (treeViewItem != null)
                 {
-                    e.Effects = DragDropEffects.None;
-                    ClearDragIndicators();
-                }
-                else
-                {
-                    e.Effects = DragDropEffects.Move;
+                    Point relativePos = e.GetPosition(treeViewItem);
+                    double height = treeViewItem.ActualHeight;
+                    DropPosition position = DropPosition.None;
 
-                    if (treeViewItem != null)
+                    if (targetNode != null && targetNode.IsFolder)
                     {
-                        Point relativePos = e.GetPosition(treeViewItem);
-                        double height = treeViewItem.ActualHeight;
-                        DropPosition position = DropPosition.None;
-
-                        if (targetNode != null && targetNode.IsFolder)
-                        {
-                            if (relativePos.Y < height * 0.3)
-                                position = DropPosition.Before;
-                            else if (relativePos.Y > height * 0.7)
-                                position = DropPosition.After;
-                            else
-                                position = DropPosition.Inside;
-                        }
+                        if (relativePos.Y < height * 0.3)
+                            position = DropPosition.Before;
+                        else if (relativePos.Y > height * 0.7)
+                            position = DropPosition.After;
                         else
-                        {
-                            if (relativePos.Y < height * 0.5)
-                                position = DropPosition.Before;
-                            else
-                                position = DropPosition.After;
-                        }
-
-                        if (_lastHoveredItem != treeViewItem || _lastDropPosition != position)
-                        {
-                            ClearDragIndicators();
-                            _lastHoveredItem = treeViewItem;
-                            _lastDropPosition = position;
-                            DragDropHelper.SetDropPosition(treeViewItem, position);
-                        }
+                            position = DropPosition.Inside;
                     }
                     else
                     {
-                        ClearDragIndicators();
+                        if (relativePos.Y < height * 0.5)
+                            position = DropPosition.Before;
+                        else
+                            position = DropPosition.After;
                     }
+
+                    if (_lastHoveredItem != treeViewItem || _lastDropPosition != position)
+                    {
+                        ClearDragIndicators();
+                        _lastHoveredItem = treeViewItem;
+                        _lastDropPosition = position;
+                        DragDropHelper.SetDropPosition(treeViewItem, position);
+                    }
+                }
+                else
+                {
+                    ClearDragIndicators();
                 }
             }
             e.Handled = true;
